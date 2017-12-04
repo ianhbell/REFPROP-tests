@@ -12,6 +12,7 @@ class REFPROPDLLFixture
 public:
     REFPROPDLLFixture(){
         char* RPPREFIX = std::getenv("RPPREFIX");
+        REQUIRE(RPPREFIX != nullptr);
         REQUIRE(strlen(RPPREFIX) != 0);
         std::string shared_library_filename = "";
         std::string err = "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRR";
