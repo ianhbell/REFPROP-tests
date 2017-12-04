@@ -1,0 +1,6 @@
+[submodule "externals/Catch"]
+	path = externals/Catch
+	url = https://github.com/catchorg/Catch2
+[submodule "externals/REFPROP-headers"]
+	path = externals/REFPROP-headers
+	url = https://github.com/coolprop/REFPROP-headers
