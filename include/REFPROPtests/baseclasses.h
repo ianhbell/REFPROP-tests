@@ -30,8 +30,7 @@ public:
     }
     ~REFPROPDLLFixture(){
         std::string err;
-        bool did_unload = RP.release();
-        REQUIRE(did_unload);
+        RP.release();
     }
     // And now, totally magical, the use of variadic function arguments in concert with type macros
     // Add many methods, each corresponding to a 1-to-1 wrapper of a function from the shared library
