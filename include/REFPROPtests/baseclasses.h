@@ -29,7 +29,6 @@ public:
         SETPATHdll(RPPREFIX, strlen(RPPREFIX));
     }
     ~REFPROPDLLFixture(){
-        std::string err;
         RP.release();
     }
     // And now, totally magical, the use of variadic function arguments in concert with type macros
