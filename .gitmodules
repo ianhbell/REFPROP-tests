@@ -4,3 +4,6 @@
 [submodule "externals/REFPROP-headers"]
 	path = externals/REFPROP-headers
 	url = https://github.com/coolprop/REFPROP-headers
+[submodule "externals/manyso"]
+	path = externals/manyso
+	url = https://github.com/usnistgov/manyso

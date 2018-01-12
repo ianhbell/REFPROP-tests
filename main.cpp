@@ -3,33 +3,7 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
-#define REFPROP_IMPLEMENTATION
-#include "REFPROP_lib.h"
-#undef REFPROP_IMPLEMENTATION
-
-class REFPROPDLLFixture
-{
-public:
-    REFPROPDLLFixture(){
-        char* RPPREFIX = std::getenv("RPPREFIX");
-        REQUIRE(RPPREFIX != nullptr);
-        REQUIRE(strlen(RPPREFIX) != 0);
-        std::string shared_library_filename = "";
-        std::string err = "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRR";
-        bool did_load = load_REFPROP(err, RPPREFIX, shared_library_filename);
-        REQUIRE(did_load);
-        
-        // Set the path in REFPROP
-        REQUIRE(SETUPdll != nullptr);
-        SETPATHdll(RPPREFIX, strlen(RPPREFIX));
-    }
-    ~REFPROPDLLFixture(){
-        std::string err;
-        bool did_unload = unload_REFPROP(err);
-        REQUIRE(did_unload);
-    }
-    virtual void payload() = 0;
-};
+#include "REFPROPtests/baseclasses.h"
 
 class NBP : public REFPROPDLLFixture
 {
