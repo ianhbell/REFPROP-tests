@@ -9,17 +9,18 @@ class NBP : public REFPROPDLLFixture
 {
 public:
     void payload(){
-        long ierr = 1, nc = 1;
+        int ierr = 1, nc = 1;
         char herr[255], hfld[] = "WATER.FLD", hhmx[] = "HMX.BNC", href[] = "DEF";
         SETUPdll(nc,hfld,hhmx,href,ierr,herr,10000,255,3,255);
         CHECK(ierr==0);
         
-        double z[] = {1.0}, x[] = {1.0}, y[] = {1.0}, T= 300, p = 101.325, d = -1, dl = -1, dv = -1, h = -1, s = -1, u = -1, cp = -1, cv = -1, q = -1, w = -1;
-        TPFLSHdll(T, p, z, d, dl, dv, x, y, h,s,u,cp,cv,w,q,ierr,herr,255);
+        int kq = 1;
+        double z[] = {1.0}, x[] = {1.0}, y[] = {1.0}, T= 300, p = 101.325, d = -1, dl = -1, dv = -1, h = -1, s = -1, u = -1, cp = -1, cv = -1, q = 0, w = -1;
+        PQFLSHdll(p, q, z, kq, T, d, dl, dv, x, y, u,h,s,cp,cv,w,ierr,herr,255);
         CHECK(ierr == 0);
         CAPTURE(herr);
-        
-        //std::cout << "d: "+std::to_string(d)+" mol/L\n";
+
+        CHECK(T == Approx(373.15).margin(0.1));
     }
 };
 
