@@ -21,7 +21,6 @@ public:
         PQFLSHdll(p, q, z, kq, T, d, dl, dv, x, y, u,h,s,cp,cv,w,ierr,herr,255);
         CAPTURE(herr); 
         CHECK(ierr == 0);
-        
 
         CHECK(T == Approx(373.15).margin(0.1));
     }
@@ -112,7 +111,7 @@ public:
             int icomp = 1, kq = 1;
             INFOdll(icomp, wmm, ttrp, tnbpt, tc, pc, Dc, Zc, acf, dip, Rgas);
 
-            double p = 101.325, x[20], D, Dl, Dv, xliq[20], xvap[20], q = 0, u, h, s, cv, cp, w;
+            double p = 101.325, D, Dl, Dv, xliq[20], xvap[20], q = 0, u, h, s, cv, cp, w;
             ierr = 0; char herr[255] = "";
 
             char htyp[4] = "EOS"; double Tmin, Tmax, Dmax, Pmax;
