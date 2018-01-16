@@ -72,7 +72,8 @@ public:
 
             double T, p=101.325, x[20], D, Dl, Dv, xliq[20], xvap[20], q=0, u,h,s,cv,cp,w;
             ierr=0; char herr[255]="";
-            // Calculate p_nbp given T_nbp
+
+            // Calculate T_nbp given p_nbp (101.325 kPa)
             PQFLSHdll(p, q, z, kq, T, D, Dl, Dv, xliq, xvap, u,h,s,cv,cp,w,ierr, herr, 255);
             CAPTURE(fld);
             CHECK(ierr == 0);
