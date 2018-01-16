@@ -7,3 +7,6 @@
 [submodule "externals/manyso"]
 	path = externals/manyso
 	url = https://github.com/usnistgov/manyso
+[submodule "externals/boost-cmake"]
+	path = externals/boost-cmake
+	url = https://github.com/Orphis/boost-cmake.git
