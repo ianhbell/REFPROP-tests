@@ -6,7 +6,6 @@
 #include "REFPROPtests/baseclasses.h"
 #include "REFPROPtests/utils.h"
 
-
 class NBP : public REFPROPDLLFixture
 {
 public:
@@ -25,11 +24,7 @@ public:
         CHECK(T == Approx(373.15).margin(0.1));
     }
 };
-
-TEST_CASE_METHOD(NBP, "Check NBP of water", "[nbp]")
-{
-    payload();
-};
+TEST_CASE_METHOD(NBP, "Check NBP of water", "[nbp]"){ payload(); };
 
 class mixNBP : public REFPROPDLLFixture
 {
@@ -49,11 +44,7 @@ public:
         REQUIRE(ierr == 0);
     }
 };
-
-TEST_CASE_METHOD(mixNBP, "Check TP flash of multicomponent mixture", "[flash]")
-{
-    payload();
-};
+TEST_CASE_METHOD(mixNBP, "Check TP flash of multicomponent mixture", "[flash]"){ payload(); };
 
 class pureNBP : public REFPROPDLLFixture
 {
@@ -91,11 +82,7 @@ public:
         }
     }
 };
-
-TEST_CASE_METHOD(pureNBP, "Check NBP for all pure fluids (when possible)", "[flash]")
-{
-    payload();
-};
+TEST_CASE_METHOD(pureNBP, "Check NBP for all pure fluids (when possible)", "[flash]"){ payload(); };
 
 class pureTrip : public REFPROPDLLFixture
 {
