@@ -117,3 +117,29 @@ public:
     }
 };
 TEST_CASE_METHOD(pureTrip, "Check Ttriple for all pure fluids (when possible)", "[flash]"){ payload(); };
+
+class AbsPathSETUP : public REFPROPDLLFixture
+{
+public:
+    void payload() {
+        std::string fld = std::string(std::getenv("RPPREFIX")) + "/FLUIDS/ACETYLENE.FLD";
+        int ierr = 0; char cfld[10000];
+        strcpy(cfld, fld.c_str());
+        SETFLUIDSdll(cfld, ierr, 255);
+        if (ierr != 0) {
+            int _ierr;
+            char herr[255];
+            ERRMSGdll(_ierr, herr, 255);
+            CAPTURE(herr);
+        }
+        REQUIRE(ierr == 0);
+        double wmol=0; int i = 1;
+        WMOLIdll(i, wmol);
+        CHECK(wmol > 26);
+        CHECK(wmol < 27);
+
+
+
+    }
+};
+TEST_CASE_METHOD(AbsPathSETUP, "Check absolute paths are ok", "[setup]") { payload(); };
