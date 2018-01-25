@@ -26,6 +26,19 @@ public:
 };
 TEST_CASE_METHOD(NBP, "Check NBP of water", "[nbp]"){ payload(); };
 
+class WeirdFiles : public REFPROPDLLFixture
+{
+public:
+    void payload() {
+        int ierr = 1, nc = 1;
+        char herr[255], hfld[] = "-10.0.FLD", hhmx[] = "HMX.BNC", href[] = "DEF";
+        SETUPdll(nc, hfld, hhmx, href, ierr, herr, 10000, 255, 3, 255);
+        CAPTURE(herr);
+        REQUIRE(ierr == 0);
+    }
+};
+TEST_CASE_METHOD(WeirdFiles, "Check fluid files with dash in them", "[file_loading]") { payload(); };
+
 class mixNBP : public REFPROPDLLFixture
 {
 public:
