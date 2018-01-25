@@ -1,7 +1,7 @@
 #ifndef REFPROP_TESTS_BASECLASSES
 #define REFPROP_TESTS_BASECLASSES
 
-#include "manyso/windows/windows.h"
+#include "manyso/native.h"
 #include "manyso/exceptions.h"
 
 #include "REFPROP_lib.h"
@@ -9,7 +9,7 @@
 class REFPROPDLLFixture
 {
 private:
-    std::unique_ptr<WindowsSharedLibraryWrapper> RP;
+    std::unique_ptr<NativeSharedLibraryWrapper> RP;
 public:
     REFPROPDLLFixture(){
         char* RPPREFIX = std::getenv("RPPREFIX");
@@ -19,7 +19,7 @@ public:
         std::string shared_library_path = std::string(RPPREFIX) + shared_library_filename;
 
         auto load_method = AbstractSharedLibraryWrapper::load_method::FROM_FILE;
-        RP.reset(new WindowsSharedLibraryWrapper(shared_library_path, load_method));
+        RP.reset(new NativeSharedLibraryWrapper(shared_library_path, load_method));
         
         // Check that the load was a success
         bool loaded_properly = std::get<0>(RP->is_locked());

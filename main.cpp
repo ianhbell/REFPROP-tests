@@ -137,9 +137,6 @@ public:
         WMOLIdll(i, wmol);
         CHECK(wmol > 26);
         CHECK(wmol < 27);
-
-
-
     }
 };
 TEST_CASE_METHOD(AbsPathSETUP, "Check absolute paths are ok", "[setup]") { payload(); };
