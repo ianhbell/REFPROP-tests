@@ -4,7 +4,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp> 
 
-std::vector<std::string> get_pure_fluids_list() {
+static std::vector<std::string> get_pure_fluids_list() {
     char* RPPREFIX = std::getenv("RPPREFIX");
     REQUIRE(strlen(RPPREFIX) != 0);
     namespace fs = boost::filesystem;
