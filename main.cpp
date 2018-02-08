@@ -153,3 +153,48 @@ public:
     }
 };
 TEST_CASE_METHOD(AbsPathSETUP, "Check absolute paths are ok", "[setup]") { payload(); };
+
+
+class SUBTVALIDATION : public REFPROPDLLFixture
+{
+public:
+    struct PsubCheck {
+        std::string name;
+        double T_K, p_Pa, eps_tol;
+    };
+    std::vector<PsubCheck> points = {
+        {"SF6", 209.7416748, 0.101325e6, 0.001}, // Guder and Span
+        {"H2S", 164.932, 0.0031937e6,0.001},
+        {"AMMONIA", 176.957, 8.0746e2, 0.01},
+        {"CO",61.55, 3.7596e3, 0.00001},
+        {"ETHYLENE",90, 3.5004, 0.0001},
+        {"ETHANE", 80.808, 4.2065E-2, 0.0001},
+        {"FLUORINE", 50, 6.75998e2,0.001},
+        {"N2O", 153.84615384615384, 0.00474895372822e6, 0.001 }
+    };
+    void payload() {
+        for (auto &&pt : points){
+            std::string fld = pt.name;
+            int ierr = 0; char cfld[10000];
+            strcpy(cfld, fld.c_str());
+            SETFLUIDSdll(cfld, ierr, 255);
+            if (ierr != 0) {
+                int _ierr;
+                char herr[255];
+                ERRMSGdll(_ierr, herr, 255);
+                CAPTURE(herr);
+            }
+            REQUIRE(ierr == 0);
+
+            double x[1] = {1.0};
+            double p_kPa;
+            char herr[255];
+            SUBLTdll(pt.T_K, x, p_kPa, ierr,herr,255);
+            double p_Pa = p_kPa*1000;
+            CAPTURE(herr);
+            REQUIRE(ierr == 0);
+            CHECK(p_Pa == Approx(pt.p_Pa).epsilon(pt.eps_tol));
+        }
+    }
+};
+TEST_CASE_METHOD(SUBTVALIDATION, "Check sublimation pressures", "[sublimation]") { payload(); };
