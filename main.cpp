@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <boost/algorithm/string/trim.hpp>
 
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
@@ -11,7 +12,7 @@ class NBP : public REFPROPDLLFixture
 public:
     void payload(){
         int ierr = 1, nc = 1;
-        char herr[255], hfld[] = "WATER.FLD", hhmx[] = "HMX.BNC", href[] = "DEF";
+        char herr[255], hfld[255] = "WATER.FLD", hhmx[255] = "HMX.BNC", href[4] = "DEF";
         SETUPdll(nc,hfld,hhmx,href,ierr,herr,10000,255,3,255);
         CHECK(ierr==0);
         
@@ -154,6 +155,114 @@ public:
 };
 TEST_CASE_METHOD(AbsPathSETUP, "Check absolute paths are ok", "[setup]") { payload(); };
 
+class FullAbsPathSETUP : public REFPROPDLLFixture
+{
+public:
+
+    void payload() {
+        int MOLAR_BASE_SI = get_enum("MOLAR BASE SI");
+
+        std::string hmx = std::string(std::getenv("RPPREFIX")) + "/FLUIDS/HMX.BNC";
+       // hmx += std::string(255-hmx.size(), '\0');
+        char * hhmx = const_cast<char *>(hmx.c_str());
+        
+        for (char sep : {'*',';'})
+        {
+            std::string fld0 = std::string(std::getenv("RPPREFIX")) + "FLUIDS/R32.FLD";
+            std::string fld1 = std::string(std::getenv("RPPREFIX")) + "FLUIDS/PROPANE.FLD";
+            std::string fld = fld0 + std::string(1, sep) + fld1;
+            std::string flds = fld + std::string(10000-fld.size(), '\0');
+            char hfld[10000];
+            strcpy(hfld, flds.c_str());
+            char hin[255] = "", hout[255] = "FDIR(1)", hUnits[255], herr[255];
+            int iMass = 0, iFlag = 0, iUnit = 0, ierr = 0;
+            double Output[200], x[20], y[20], x3[20], z[20] = { 0.5,0.5 }, q, a = 1, Q = 0.0;
+            REFPROPdll(hfld, hin, hout, MOLAR_BASE_SI, iMass, iFlag, a, Q, z, Output, hUnits, iUnit, x, y, x3, q, ierr, herr, 10000U, 255U, 255U, 255U, 255U);
+            CAPTURE(hUnits);
+            CAPTURE(sep);
+            CAPTURE(herr);
+            std::string str = std::string(herr);
+            boost::algorithm::trim(str);
+            CHECK(str == fld0);
+            CHECK(ierr == -999);
+        }
+        {
+            std::string flds = std::string(std::getenv("RPPREFIX")) + "FLUIDS/R32.FLD" + "|" + std::string(std::getenv("RPPREFIX")) + "FLUIDS/PROPANE.FLD";
+            flds += std::string(10000-flds.size(), '\0');
+            char * hfld = const_cast<char *>(flds.c_str());
+            int ierr = 0, nc=2; char hdef[4] = "DEF", herr[255];
+            SETUPdll(nc,hfld, hhmx, hdef, ierr, herr, 10000,255,3,255);
+            CAPTURE(herr);
+            CHECK(ierr == 0);
+            double wmol = 0; int i = 1;
+            WMOLIdll(i, wmol);
+            CHECK(wmol > 50);
+            CHECK(wmol < 55);
+        }
+        {
+            std::string flds = "R32;PROPANE" + std::string(5000, '\0');
+            char * hfld = const_cast<char *>(flds.c_str());
+            char hin[255] = "TQ", hout[255] = "D", hUnits[255], herr[255];
+            int iMass = 0, iFlag = 0, iUnit, ierr = 0;
+            double Output[200], x[20], y[20], x3[20], z[2] = { 0.5,0.5 }, q, T = 300.0, Q = 0.0;
+            REFPROPdll(hfld, hin, hout, MOLAR_BASE_SI, iMass, iFlag, T, Q, z, Output, hUnits, iUnit, x, y, x3, q, ierr, herr, 10000, 255, 255, 255, 255);
+            CAPTURE(herr);
+            CHECK(ierr == 0);
+        }
+    }
+};
+TEST_CASE_METHOD(FullAbsPathSETUP, "Check full absolute paths are ok", "[setup]") { payload(); };
+
+class CheckZEZEstimated : public REFPROPDLLFixture
+{
+public:
+    void payload() {
+        int MOLAR_BASE_SI = get_enum("MOLAR BASE SI");
+        std::string flds = "R134A*R1234ZEZ" + std::string(500, '\0');
+        char * hfld = const_cast<char *>(flds.c_str());
+        char hin[255] = " ", hout[255] = "FIJMIX", hUnits[255], herr[255];
+        int iMass = 0, iFlag = 0, iUnit, ierr = 0;
+        double Output[200], x[20], y[20], x3[20], z[2] = { 0.5,0.5 }, q, a = 1, b = 2;
+        REFPROPdll(hfld, hin, hout, MOLAR_BASE_SI, iMass, iFlag, a, b, z, Output, hUnits, iUnit, x, y, x3, q, ierr, herr, 10000, 255, 255, 255, 255);
+        CAPTURE(herr);
+        CHECK(ierr == -117);
+    }
+};
+TEST_CASE_METHOD(CheckZEZEstimated, "CheckZEZEstimated", "[setup]") { payload(); };
+
+class CheckZEFails : public REFPROPDLLFixture
+{
+public:
+    void payload() {
+        char cfld[255] = "R1234ze";
+        int ierr = 0;
+        SETFLUIDSdll(cfld, ierr, 255);
+        if (ierr != 0) {
+            char herr[255];
+            ERRMSGdll(ierr, herr, 255);
+            CAPTURE(herr);
+        }
+        CHECK(ierr == 851);
+    }
+};
+TEST_CASE_METHOD(CheckZEFails, "Check that R1234ze is an invalid fluid name", "[setup]") { payload(); };
+
+class CheckMethaneLoads : public REFPROPDLLFixture
+{
+public:
+    void payload() {
+        char cfld[255] = "METHANE";
+        int ierr = 0;
+        SETFLUIDSdll(cfld, ierr, 255);
+        if (ierr != 0) {
+            char herr[255];
+            ERRMSGdll(ierr, herr, 255);
+            CAPTURE(herr);
+        }
+        CHECK(ierr == 0);
+    }
+};
+TEST_CASE_METHOD(CheckMethaneLoads, "Check that methane loads properly", "[setup]") { payload(); };
 
 class SUBTVALIDATION : public REFPROPDLLFixture
 {
