@@ -247,22 +247,24 @@ public:
 };
 TEST_CASE_METHOD(CheckZEFails, "Check that R1234ze is an invalid fluid name", "[setup]") { payload(); };
 
-class CheckMethaneLoads : public REFPROPDLLFixture
+class CheckAllLoads : public REFPROPDLLFixture
 {
 public:
     void payload() {
-        char cfld[255] = "METHANE";
-        int ierr = 0;
-        SETFLUIDSdll(cfld, ierr, 255);
-        if (ierr != 0) {
-            char herr[255];
-            ERRMSGdll(ierr, herr, 255);
-            CAPTURE(herr);
+        for (auto &fld : get_pure_fluids_list()) {
+            int ierr = 0; char cfld[10000];
+            strcpy(cfld, fld.c_str());
+            SETFLUIDSdll(cfld, ierr, 255);
+            if (ierr != 0) {
+                char herr[255];
+                ERRMSGdll(ierr, herr, 255);
+                CAPTURE(herr);
+            }
+            CHECK(ierr == 0);
         }
-        CHECK(ierr == 0);
     }
 };
-TEST_CASE_METHOD(CheckMethaneLoads, "Check that methane loads properly", "[setup]") { payload(); };
+TEST_CASE_METHOD(CheckAllLoads, "Check that all fluids load properly", "[setup]") { payload(); };
 
 class SUBTVALIDATION : public REFPROPDLLFixture
 {
