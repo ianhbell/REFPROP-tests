@@ -18,10 +18,19 @@ public:
         char* RPPREFIX = std::getenv("RPPREFIX");
         REQUIRE(RPPREFIX != nullptr);
         REQUIRE(strlen(RPPREFIX) != 0);
+#if defined(__MANYSOISWINDOWS__)
         std::string shared_library_filename = "REFPRP64.DLL";
+#else
+        std::string shared_library_filename = "librefprop.so";
+#endif
+
         std::string shared_library_path = std::string(RPPREFIX) + shared_library_filename;
 
+#if defined(__MANYSOISWINDOWS__)
         auto load_method = AbstractSharedLibraryWrapper::load_method::FROM_FILE;
+#else
+        auto load_method = AbstractSharedLibraryWrapper::load_method::LOAD_LIBRARY;
+#endif
         RP.reset(new NativeSharedLibraryWrapper(shared_library_path, load_method));
         
         // Check that the load was a success
