@@ -10,11 +10,19 @@ include_directories("${CMAKE_SOURCE_DIR}/externals/manyso/include")
 include_directories("${CMAKE_SOURCE_DIR}/externals/manyso/externals/MemoryModule")
 include_directories("${CMAKE_SOURCE_DIR}/include/")
 
-# Make a tiny static library of MemoryModule core
-add_library(MemoryModuleLib STATIC "${CMAKE_SOURCE_DIR}/externals/manyso/externals/MemoryModule/MemoryModule.c")
+# Make a tiny static library of MemoryModule core (only for windows)
+if (WIN32)
+    add_library(MemoryModuleLib STATIC "${CMAKE_SOURCE_DIR}/externals/manyso/externals/MemoryModule/MemoryModule.c")
+endif()
 
+# The main EXE
 add_executable(main main.cpp)
-target_link_libraries(main MemoryModuleLib Boost::filesystem)
+# The required dependencies
+target_link_libraries(main Boost::filesystem)
+# For windows, the MemoryModule too
+if (WIN32)
+    target_link_libraries(main MemoryModuleLib)
+endif()
 if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
     target_link_libraries(main ${CMAKE_DL_LIBS})
 endif()
