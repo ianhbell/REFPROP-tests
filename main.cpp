@@ -266,6 +266,24 @@ public:
 };
 TEST_CASE_METHOD(CheckAllLoads, "Check that all fluids load properly", "[setup]") { payload(); };
 
+class CheckREDX : public REFPROPDLLFixture
+{
+public:
+    void payload() {
+        int ierr = 0;
+        char fld[10000] = "Methane * Nitrogen";
+        SETFLUIDSdll(fld, ierr, 255);
+        CHECK(ierr == 0);
+        double x[] = {0.5,0.5}, Tr=1e20, Dr = 1e20;
+        REDXdll(x, Tr, Dr);
+        CAPTURE(Tr);
+        CAPTURE(Dr);
+        CHECK(Tr > 50);
+        CHECK(Tr < 250);
+    }
+};
+TEST_CASE_METHOD(CheckREDX, "Check that REDX works properly", "[REDX]") { payload(); };
+
 class SUBTVALIDATION : public REFPROPDLLFixture
 {
 public:
