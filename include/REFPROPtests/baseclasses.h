@@ -97,8 +97,6 @@ public:
         return res;
     }
     
-    /// This is the test that you must implement in the derived class
-    virtual void payload() = 0;
 };
 
 #endif
