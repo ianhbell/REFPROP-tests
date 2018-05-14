@@ -143,55 +143,10 @@ public:
                     break;
                 }
                 default: {
-                    CHECK(in.Ninputs == 2);
+                    throw "Bad number of arguments";
                 }
             }
-        }
-        
-
-        //int ierr = 0, ncomp = 20, GERGon = 1; // Turn GERG 2008 on
-        //char herr[255];
-        //GERG08dll(ncomp, GERGon, ierr, herr, 255);
-        //CHECK(ierr == 0);
-        //std::string joined = components[0];
-        //for (auto i = 1; i < components.size() - 1; ++i) {
-        //    joined += " * " + components[i];
-        //}
-
-        //char hfld[10000];
-        //strcpy(hfld, joined.c_str());
-        //for (auto& data : GERG2008_validation_data) {
-        //    std::vector<double> zperc = mixture_comps[data.GasNo - 2]; // the first Gas No is 2 -> index of 0 in vector   
-        //    CHECK(zperc.size() == 21);
-        //    std::vector<double> z(zperc.begin(), zperc.begin() + 20);
-        //    CHECK(z.size() == 20);
-        //    double sumz = 0;
-        //    for (auto &_z : z) {
-        //        _z /= 100.0;
-        //        sumz += _z;
-        //    }
-        //    z[0] = 1 - (sumz - zperc[0] / 100.0);
-        //    //CHECK(std::abs(sumz-1) < 1e-12);
-        //    char hIn[255] = "TD&", hOut[255] = "P;CV;CP;W";
-        //    int iMass = 0, iFlag = 0;
-        //    double Output[200], x[20], y[20], x3[20];
-        //    char hUnits[255]; int iUnit = 0;
-        //    double q = 0;
-        //    CAPTURE(data.T_K);
-        //    CAPTURE(data.D_molL);
-        //    CAPTURE(data.GasNo);
-        //    REFPROPdll(hfld, hIn, hOut, MOLAR_SI, iMass, iFlag, data.T_K, data.D_molL, &(z[0]), Output, hUnits, iUnit, x, y, x3, q, ierr, herr, 10000, 255, 255, 255, 255);
-        //    CAPTURE(herr);
-        //    CHECK(ierr == 0);
-        //    double p_err = std::abs(Output[0] - data.P_MPa);
-        //    double cv_err = std::abs(Output[1] - data.cv_JmolK);
-        //    double cp_err = std::abs(Output[2] - data.cp_JmolK);
-        //    double w_err = std::abs(Output[3] - data.w_ms);
-        //    CHECK(p_err < 2e-5);
-        //    //CHECK(cv_err < 2e-4);
-        //    //CHECK(cp_err < 2e-4);
-        //    //CHECK(w_err < 2e-4);
-        //}
+        }      
     }
 };
 TEST_CASE_METHOD(XLSChecksumFixture, "Check checksum calculations from the Excel spreadsheet", "[Excel]") { payload(); };
