@@ -38,8 +38,7 @@ static std::vector<std::pair<std::string, std::string>> get_binary_pairs() {
 
     fs::path target(fs::path(RPPREFIX) / fs::path("FLUIDS") / fs::path("HMX.BNC"));
     std::string contents = get_file_contents(target.string());
-    std::string spattern = R"(([\w \-]+\/[\w \-]+)\s{2,}\[)";
-    std::regex pattern(spattern);
+    std::regex pattern(R"(([\w \-]+\/[\w \-]+)\s{2,}\[)");
     std::smatch pair_match;
     std::vector<std::pair<std::string, std::string>> pairs;
     for (auto &&line : str_split(contents)) {
@@ -53,44 +52,32 @@ static std::vector<std::pair<std::string, std::string>> get_binary_pairs() {
     return pairs;
 }
 
-static std::vector<std::string> get_pure_fluids_list() {
+static std::vector<std::string> get_files_in_folder(const std::string &folder, const std::string &extension) {
     char* RPPREFIX = std::getenv("RPPREFIX");
     REQUIRE(strlen(RPPREFIX) != 0);
     namespace fs = boost::filesystem;
-    std::vector<std::string> fluids;
+    std::vector<std::string> files;
 
     // See https://stackoverflow.com/a/8725664/1360263
-    fs::path targetDir(fs::path(RPPREFIX) /  fs::path("FLUIDS"));
+    fs::path targetDir(fs::path(RPPREFIX) / fs::path(folder));
     fs::directory_iterator it(targetDir), eod;
     BOOST_FOREACH(fs::path const &p, std::make_pair(it, eod))
     {
-        if (fs::is_regular_file(p) && p.extension() == fs::path(".FLD"))
+        if (fs::is_regular_file(p) && p.extension() == fs::path(extension))
         {
             std::string s = fs::canonical(p).filename().replace_extension("").string();
-            fluids.push_back(s);
+            files.push_back(s);
         }
     }
-    return fluids;
+    return files;
+}
+
+static std::vector<std::string> get_pure_fluids_list() {
+    return get_files_in_folder("FLUIDS", ".FLD");
 }
 
 static std::vector<std::string> get_predefined_mixtures_list() {
-    char* RPPREFIX = std::getenv("RPPREFIX");
-    REQUIRE(strlen(RPPREFIX) != 0);
-    namespace fs = boost::filesystem;
-    std::vector<std::string> fluids;
-
-    // See https://stackoverflow.com/a/8725664/1360263
-    fs::path targetDir(fs::path(RPPREFIX) / fs::path("MIXTURES"));
-    fs::directory_iterator it(targetDir), eod;
-    BOOST_FOREACH(fs::path const &p, std::make_pair(it, eod))
-    {
-        if (fs::is_regular_file(p) && p.extension() == fs::path(".MIX"))
-        {
-            std::string s = fs::canonical(p).filename().replace_extension("").string();
-            fluids.push_back(s);
-        }
-    }
-    return fluids;
+    return get_files_in_folder("MIXTURES", ".MIX");
 }
 
 #endif
