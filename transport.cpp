@@ -104,12 +104,12 @@ std::vector<vel> transport_validation_data = {
     {"Oxygen", "T", 200, "Dmolar", 10000, "V", 22.4445e-6, 1e-3},
     {"Oxygen", "T", 300, "Dmolar", 5000, "V", 23.7577e-6, 1e-3},
     {"Oxygen", "T", 154.6, "Dmolar", 13600, "V", 24.7898e-6, 1e-3},
-    {"Air.ppf", "T", 100, "Dmolar", 1e-14, "V", 7.09559e-6, 1e-3},
-    {"Air.ppf", "T", 300, "Dmolar", 1e-14, "V", 18.5230e-6, 1e-3},
-    {"Air.ppf", "T", 100, "Dmolar", 28000, "V", 107.923e-6, 1e-3},
-    {"Air.ppf", "T", 200, "Dmolar", 10000, "V", 21.1392e-6, 1e-3},
-    {"Air.ppf", "T", 300, "Dmolar", 5000, "V", 21.3241e-6, 1e-3},
-    {"Air.ppf", "T", 132.64, "Dmolar", 10400, "V", 17.7623e-6, 1e-3},
+    {"AIR.PPF", "T", 100, "Dmolar", 1e-14, "V", 7.09559e-6, 1e-3},
+    {"AIR.PPF", "T", 300, "Dmolar", 1e-14, "V", 18.5230e-6, 1e-3},
+    {"AIR.PPF", "T", 100, "Dmolar", 28000, "V", 107.923e-6, 1e-3},
+    {"AIR.PPF", "T", 200, "Dmolar", 10000, "V", 21.1392e-6, 1e-3},
+    {"AIR.PPF", "T", 300, "Dmolar", 5000, "V", 21.3241e-6, 1e-3},
+    {"AIR.PPF", "T", 132.64, "Dmolar", 10400, "V", 17.7623e-6, 1e-3},
 
     // From Michailidou, JPCRD, 2013
     {"Hexane", "T", 250, "Dmass", 1e-14, "V", 5.2584e-6, 1e-3},
