@@ -27,13 +27,23 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Try to load all predefined mixtures", "[set
         std::vector<double> z(20,0.0);
         auto r = REFPROP(mix, " ", "TRED", 1, 0, 0, 0.101325, 300, z);
         CAPTURE(mix);
+        CAPTURE(r.herr);
+        CHECK(r.ierr < 100);
+    }
+    for (auto &&mix : get_predefined_mixtures_list()) {
+        std::vector<double> z(20, 0.0);
+        auto r = REFPROP(mix+".MIX", " ", "TRED", 1, 0, 0, 0.101325, 300, z);
+        CAPTURE(mix+".MIX");
+        CAPTURE(r.herr);
         CHECK(r.ierr < 100);
     }
 };
 
-TEST_CASE_METHOD(REFPROPDLLFixture, "Check fluid files with dash in them", "[file_loading]") {
+TEST_CASE_METHOD(REFPROPDLLFixture, "Check fluid files with dash in them", "[file_loading],[setup]") {
     int ierr = 1, nc = 1;
     char herr[255], hfld[] = "-10.0.FLD", hhmx[] = "HMX.BNC", href[] = "DEF";
+    char nopath[255] = "";
+    SETPATHdll(nopath, 255);
     SETUPdll(nc, hfld, hhmx, href, ierr, herr, 10000, 255, 3, 255);
     CAPTURE(herr);
     REQUIRE(ierr == 0);
