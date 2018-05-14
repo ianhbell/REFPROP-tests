@@ -60,37 +60,92 @@ public:
 };
 TEST_CASE_METHOD(mixNBP, "Check TP flash of multicomponent mixture", "[flash]"){ payload(); };
 
+class EnablePR : public REFPROPDLLFixture
+{
+public:
+    void payload() {
+
+        // SETUP
+        int ierr = 0, nc =2;
+        char hfld[10000] = "METHANE|ETHANE";
+        char herr[255], hhmx[] = "HMX.BNC", href[] = "DEF";
+        SETUPdll(nc, hfld, hhmx, href, ierr, herr, 10000, 255, 3, 255);
+        REQUIRE(ierr == 0);
+
+        // Turn on PR
+        int prflag = 2;
+        PREOSdll(prflag);
+        
+        // Get the parameters
+        int icomp = 1, jcomp = 2;
+        ierr = 0;
+        char hmodij[3], hfmix[255], hbinp[255], hfij[255], hmxrul[255];
+        double fij[6];
+        GETKTVdll(icomp, jcomp, hmodij, fij, hfmix, hfij, hbinp, hmxrul, 3, 255, 255, 255, 255);
+        std::string mod = std::string(hmodij, 3);
+        CAPTURE(mod);
+        REQUIRE(mod == "PR ");
+    }
+};
+TEST_CASE_METHOD(EnablePR, "EnablePR", "[setup]") { payload(); };
+
 class pureNBP : public REFPROPDLLFixture
 {
 public:
     void payload() {
         for (auto &fld : get_pure_fluids_list()) {
-            int ierr = 0;
-            char cfld[10000]; 
-            strcpy(cfld, fld.c_str());
-            SETFLUIDSdll(cfld, ierr, 255);
-            REQUIRE(ierr == 0); 
+            {
+                int ierr = 0;
+                char cfld[10000]; 
+                strcpy(cfld, fld.c_str());
+                SETFLUIDSdll(cfld, ierr, 255);
+                char herrsetup[255] = "";
+                if (ierr != 0) {
+                    ERRMSGdll(ierr, herrsetup, 255);
+                }
+                CAPTURE(herrsetup);
+                CAPTURE(cfld);
+                REQUIRE(ierr == 0); 
+            }
+
+            int MOLAR_BASE_SI = get_enum("MOLAR BASE SI");
+            {
+                int iMass = 0, iFlag = 0;
+                std::vector<double> z = { 0.5,0.5 }; double a = 1, Q = 0.0;
+                auto r = REFPROP(fld, "TRIP", "P", MOLAR_BASE_SI, iMass, iFlag, a, Q, z);
+                double pt = r.Output[0];
+                CAPTURE(r.herr);
+                CHECK(r.ierr < 100);
+                if (pt > 101325) {
+                    // Impossible; skip this fluid
+                    continue;
+                }
+            }
             
             double wmm, ttrp, tnbpt, tc, pc, Dc, Zc, acf, dip, Rgas, z[] = {1.0};
             int icomp = 1, kq = 1;
             INFOdll(icomp, wmm, ttrp, tnbpt, tc, pc, Dc, Zc, acf, dip, Rgas);
 
             double T, p=101.325, D, Dl, Dv, xliq[20], xvap[20], q=0, u,h,s,cv,cp,w;
-            ierr=0; char herr[255]="";
+            int ierr=0; char herr[255]="";
+            
+            char htyp[4] = "EOS"; double Tmin, Tmax, Dmax, Pmax;
+            LIMITSdll(htyp, z, Tmin, Tmax, Dmax, Pmax, 3);
 
             // Calculate T_nbp given p_nbp (101.325 kPa)
             PQFLSHdll(p, q, z, kq, T, D, Dl, Dv, xliq, xvap, u,h,s,cv,cp,w,ierr, herr, 255);
             CAPTURE(fld);
             CAPTURE(herr); 
-            CHECK(ierr == 0);
-            CHECK(T == Approx(tnbpt).margin(0.1));
+            CHECK(ierr < 100);
+            if (T < Tmin){ continue; }
+            CHECK(T == Approx(tnbpt).margin(0.01));
 
             // Now do the inverse calculation T_nbp->p_nbp
-            T = tnbpt;
+            T = tnbpt; ierr = 0;
             TQFLSHdll(T, q, z, kq, p, D, Dl, Dv, xliq, xvap, u, h, s, cv, cp, w, ierr, herr, 255);
             CAPTURE(fld);
             CAPTURE(herr); 
-            CHECK(ierr == 0);
+            CHECK(ierr < 100);
             CHECK(p == Approx(101.325).margin(0.1));
             
         }
@@ -106,7 +161,12 @@ public:
             int ierr = 0; char cfld[10000];
             strcpy(cfld, fld.c_str());
             SETFLUIDSdll(cfld, ierr, 255);
-            REQUIRE(ierr == 0);
+            char herrsetup[255] = "";
+            if (ierr != 0) {
+                ERRMSGdll(ierr, herrsetup, 255);
+            }
+            CAPTURE(herrsetup);
+            CHECK(ierr == 0);
 
             double wmm, ttrp, tnbpt, tc, pc, Dc, Zc, acf, dip, Rgas, z[] = { 1.0 };
             int icomp = 1, kq = 1;
@@ -140,12 +200,11 @@ public:
         int ierr = 0; char cfld[10000];
         strcpy(cfld, fld.c_str());
         SETFLUIDSdll(cfld, ierr, 255);
+        char herr[255];
         if (ierr != 0) {
-            int _ierr;
-            char herr[255];
-            ERRMSGdll(_ierr, herr, 255);
-            CAPTURE(herr);
+            ERRMSGdll(ierr, herr, 255);
         }
+        CAPTURE(herr);
         REQUIRE(ierr == 0);
         double wmol=0; int i = 1;
         WMOLIdll(i, wmol);
@@ -213,19 +272,426 @@ public:
 };
 TEST_CASE_METHOD(FullAbsPathSETUP, "Check full absolute paths are ok", "[setup]") { payload(); };
 
+struct KTVvalues {
+    std::string hmodij; 
+    std::vector<double> fij;
+    std::string hfmix, hfij, hbinp, hmxrul;
+};
+class GETSETKTV : public REFPROPDLLFixture
+{
+private:
+    enum class perturbations { reset, peng_robinson, AGA, set_back, jiggle_then_reset };
+
+public:
+    KTVvalues get_values(int icomp = 1, int jcomp = 2) {
+        char hmodij[3], hfmix[255], hfij[255], hbinp[255], hmxrul[255];
+        double fij[6];
+        GETKTVdll(icomp, jcomp, hmodij, fij, hfmix, hfij, hbinp, hmxrul, 3, 255, 255, 255, 255);
+        std::vector<double> v(fij,fij+6);
+        KTVvalues o{std::string(hmodij,3), v, std::string(hfmix,254), std::string(hfij,254), std::string(hbinp,254), std::string(hmxrul,254)};
+        boost::algorithm::trim(o.hmodij); //inplace
+        boost::algorithm::trim(o.hfmix); //inplace
+        boost::algorithm::trim(o.hfij); //inplace
+        boost::algorithm::trim(o.hbinp); //inplace
+        boost::algorithm::trim(o.hmxrul); //inplace
+        return o;
+    }
+    void set_values(const KTVvalues in, int icomp = 1, int jcomp = 2) {
+        char hmodij[4] = "", hfmix[255], hfij[255], hbinp[255], hmxrul[255];
+        strcpy(hmodij, in.hmodij.c_str());
+        strcpy(hfmix, in.hfmix.c_str());
+        strcpy(hfij, in.hfij.c_str());
+        strcpy(hbinp, in.hbinp.c_str());
+        strcpy(hmxrul, in.hmxrul.c_str());
+        double fij[6]; for (auto i = 0; i < in.fij.size(); ++i){ fij[i] = in.fij[i]; }
+        int ierr = 0; char herr[255];
+        SETKTVdll(icomp, jcomp, hmodij, fij, hfmix, ierr, herr, 3, 255, 255);
+        CAPTURE(herr);
+        CHECK(ierr == 0);
+    }
+    KTVvalues jiggle(const KTVvalues in) {
+        KTVvalues out = in;
+        out.fij[0] += 0.0123;
+        return out;
+    }
+    void reset() {
+        int icomp = 1, jcomp = 2;
+        char hmodij[4] = "RST", hfmix[255]; double fij[6]; 
+        int ierr = 0; char herr[255];
+        SETKTVdll(icomp, jcomp, hmodij, fij, hfmix, ierr, herr, 3, 255, 255);
+        CAPTURE(herr);
+        CHECK(ierr == 0);
+    }
+    void do_action(perturbations step) {
+        switch (step) {
+            case perturbations::peng_robinson:
+            {
+                // Initial values
+                auto init = get_values();
+                // Turn on PR
+                int prflag = 2;
+                PREOSdll(prflag);
+                auto pr_init = get_values();
+                // Check PR is on
+                CHECK(pr_init.hmodij ==
+                    std::string("PR"));
+                // Jiggle kij parameter
+                auto jig = jiggle(pr_init);
+                set_values(jig);
+                auto nv = get_values();
+                // Check PR is on, and parameters are modified
+                CHECK(nv.hmodij == std::string("PR"));
+                CHECK(nv.hbinp != pr_init.hbinp);
+                // Turn off PR
+                prflag = 0;
+                PREOSdll(prflag);
+                auto nv2 = get_values();
+                // Check PR is still on, but that parameters have been set back to initial parameters
+                CHECK(nv2.hmodij == std::string("PR"));
+                CHECK(are_same(get_values(), pr_init));
+                // Reset the parameters
+                reset();
+                CHECK(are_same(get_values(), init));
+            }
+            case perturbations::AGA:
+            {
+                auto init = get_values();
+                int ierr; char herr[255];
+                SETAGAdll(ierr, herr, 255);
+                auto flags = get_values();
+                // Check same as before
+                CHECK(are_same(init, flags));
+                // Turn off AGA
+                UNSETAGAdll();
+            }
+            case perturbations::jiggle_then_reset:
+            {
+                auto init = get_values();
+                auto jig = jiggle(init);
+                set_values(jig);
+                auto flags = get_values();
+                // Check same as before
+                CHECK(are_same(jig, flags));
+                // Reset
+                reset();
+                // Check same as beginning
+                CHECK(are_same(init, get_values()));
+            }
+            case perturbations::set_back:
+            {
+                auto init = get_values();
+                set_values(init);
+                auto flags = get_values();
+                // Check same as before
+                CHECK(are_same(init, flags));
+                // Reset
+                reset();
+                // Check same as beginning
+                CHECK(are_same(init, get_values()));
+            }
+        }
+    }
+    bool are_same(KTVvalues in1, KTVvalues in2) {
+        if (in1.fij.size() != in2.fij.size()) { return false; }
+        for (auto i = 0; i < in1.fij.size(); ++i) {
+            if (std::abs(in1.fij[i] - in2.fij[i]) > 1e-12) {
+                return false;
+            }
+        }
+        if (in1.hmodij != in2.hmodij) { return false; }
+        if (in1.hfij != in2.hfij) { return false; }
+        if (in1.hmxrul != in2.hmxrul) { return false; }
+        return true;
+    }
+    void payload() {
+        auto binary_pairs = get_binary_pairs();
+        CHECK(binary_pairs.size() > 0);
+
+        for (const std::string & fluids: {"Methane * Ethane", "R1234yf * R134a" }){
+            char cfld[255] = "";
+            CAPTURE(fluids);
+            strcpy(cfld, fluids.c_str());
+            int ierr = 0;
+            SETFLUIDSdll(cfld, ierr, 255);
+            char herr[255] = "";
+            if (ierr != 0) {
+                ERRMSGdll(ierr, herr, 255);
+            }
+            CAPTURE(herr);
+            // Get the initial state
+            auto ktv = get_values();
+
+            // Run each step, checking the output each time
+            std::vector<perturbations> steps = {
+                perturbations::AGA, 
+                perturbations::peng_robinson, 
+                perturbations::peng_robinson,
+                perturbations::set_back
+            };
+            for (auto &step : steps) {
+                do_action(step);
+            }
+            
+            // Do we end where we started?
+            auto new_ktv = get_values();
+            CHECK(are_same(ktv, new_ktv));
+        }
+    }
+};
+TEST_CASE_METHOD(GETSETKTV, "Get and set B.I.P.", "[BIP]") { payload(); };
+
+
+class CRITP : public REFPROPDLLFixture
+{
+public:
+    void payload() {
+        char cfld[255] = "Methane * Ethane";
+        int ierr = 0;
+        SETFLUIDSdll(cfld, ierr, 255);
+        char herr[255];
+        if (ierr != 0) {
+            ERRMSGdll(ierr, herr, 255);
+        }
+        CAPTURE(herr);
+
+        double z[20] = {0.5,0.5};
+        ierr = 0;
+        char herr2[255] = "";
+        double Tcrit, pcrit_kPa, dcrit_mol_L;
+        CRITPdll(z, Tcrit, pcrit_kPa, dcrit_mol_L, ierr, herr2, 255);
+        CAPTURE(herr2);
+        CHECK(ierr <= 0);
+    }
+};
+TEST_CASE_METHOD(CRITP, "Critical TC1, VC1", "[crit]") { payload(); };
+
+class CASPROPANE : public REFPROPDLLFixture
+{
+public:
+    void payload() {
+        std::vector<double> z = {1.0};
+        auto r = REFPROP("PROPANE", " ", "CAS#", 0,0,0,0,0,z);
+        CAPTURE(r.herr);
+        CHECK(r.ierr == 0);
+        boost::algorithm::trim(r.hUnits); //inplace
+        CHECK(r.hUnits == "74-98-6");
+    }
+};
+TEST_CASE_METHOD(CASPROPANE, "CAS# for PROPANE", "[CAS]") { payload(); };
+
+class Torture : public REFPROPDLLFixture
+{
+public:
+    void payload() {
+        {
+            char hflag[255] = "Debug", herr[255] = "";
+            int jflag = 1, kflag = -1, ierr = 0;
+            FLAGSdll(hflag, jflag, kflag, ierr, herr, 255,255);
+        }
+        for (auto &&pair : get_binary_pairs()){
+            for (std::string &&k: {"ETA", "TCX", "CP", "P", "STN", "TC", "PC"}){
+                for (bool forwards : {true, false}){
+                    std::vector<double> z;
+                    if (forwards) {
+                        z = {0.4,0.6};
+                    }
+                    else {
+                        z = {0.6,0.4};
+                    }
+                    std::string fluids = (forwards) ? pair.first + "*" + pair.second : pair.second + "*" + pair.first;
+                    REFPROP(fluids, "PT", k, 1, 0, 0, 0.101325, 300, z);
+                }
+            }
+        }
+    }
+};
+TEST_CASE_METHOD(Torture, "Torture test calling of DLL", "[Torture]") { payload(); };
+
+class AlpharDerivs : public REFPROPDLLFixture
+{
+public:
+    void payload() {
+        for (auto &&pair : get_binary_pairs()) {
+            // Setup the fluids
+            int ierr = 0;
+            char flds[10000];
+            std::string joined = pair.first + ";" + pair.second;
+            strcpy(flds, joined.c_str());
+            SETFLUIDSdll(flds, ierr, 255);
+            char herr[255] = "";
+            if (ierr != 0) {
+                ERRMSGdll(ierr, herr, 255);
+            }
+            CAPTURE(herr);
+            if (ierr == 101) {
+                continue;
+            }
+            CHECK(ierr == 0);
+
+            double tau  = 0.9, delta = 1.01;
+            std::vector<double> z = {0.0, 1.0};
+            auto deriv = [this, &z](int itau, int idelta, double tau, double delta) {
+                double arderiv;
+                PHIXdll(itau, idelta, tau, delta, &(z[0]), arderiv);
+                return arderiv/(pow(tau ,itau)*pow(delta, idelta));
+            };
+            for (int itau = 0; itau <= 3; ++itau) {
+                for (int idelta = 0; idelta <= 3; ++idelta) {
+                    if (itau + idelta > 4 || itau + idelta == 0) {
+                        continue;
+                    }
+                    // centered derivative based on the lower-order derivative
+                    double numeric;
+                    if (itau > 0){
+                        double dtau = 1e-5;
+                        numeric = (-deriv(itau-1, idelta, tau+2*dtau, delta)
+                            + 8 * deriv(itau - 1, idelta, tau+dtau, delta)
+                            - 8 * deriv(itau - 1, idelta,  tau-dtau, delta)
+                            + deriv(itau - 1, idelta, tau-2*dtau, delta)) / (12 * dtau);
+                    }
+                    else {
+                        double ddelta = 1e-5;
+                        numeric = (-deriv(itau, idelta-1, tau, delta + 2*ddelta)
+                            + 8 * deriv(itau, idelta-1, tau, delta + ddelta)
+                            - 8 * deriv(itau, idelta-1, tau, delta - ddelta)
+                            + deriv(itau, idelta-1, tau, delta - 2*ddelta)) / (12 * ddelta);
+                    }
+                    double analytic = deriv(itau, idelta, tau, delta);
+                    CAPTURE(itau);
+                    CAPTURE(idelta);
+                    CAPTURE(joined);
+                    CHECK(analytic == Approx(numeric).epsilon(1e-1));
+                }
+            }
+        }
+    }
+};
+TEST_CASE_METHOD(AlpharDerivs, "Check all alphar derivatives", "[alphar]") { payload(); };
+
+/// From Wagner and Pruss, JPCRD, 2002
+class WaterAlpharDerivs : public REFPROPDLLFixture
+{
+public:
+    double deriv(int itau, int idelta, double tau, double delta) {
+        double arderiv;
+        std::vector<double> z = { 1.0 };
+        PHIXdll(itau, idelta, tau, delta, &(z[0]), arderiv);
+        return arderiv / (pow(tau, itau)*pow(delta, idelta));
+    };
+    void lowT() {
+        double delta = 838.025/322, tau = 647.096/500;
+        CHECK(deriv(0,0,tau,delta) == Approx(-0.342693206e1).epsilon(1e-8));
+        CHECK(deriv(0,1,tau,delta) == Approx(-0.364366650).epsilon(1e-8));
+        CHECK(deriv(0,2,tau,delta) == Approx(0.856063701).epsilon(1e-8));
+        CHECK(deriv(1,0,tau,delta) == Approx(-0.581403435e1).epsilon(1e-8));
+        CHECK(deriv(2,0,tau,delta) == Approx(-0.223440737e1).epsilon(1e-8));
+        CHECK(deriv(1,1,tau,delta) == Approx(-0.112176915e1).epsilon(1e-8));
+    }
+    void highT() {
+        double delta = 358.0/322, tau = 647.096/647;
+        CHECK(deriv(0, 0, tau, delta) == Approx(-0.121202657e1).epsilon(1e-8));
+        CHECK(deriv(0, 1, tau, delta) == Approx(-0.714012024).epsilon(1e-8));
+        CHECK(deriv(0, 2, tau, delta) == Approx(0.475730696).epsilon(1e-8));
+        CHECK(deriv(1, 0, tau, delta) == Approx(-0.321722501e1).epsilon(1e-8));
+        CHECK(deriv(2, 0, tau, delta) == Approx(-0.996029507e1).epsilon(1e-8));
+        CHECK(deriv(1, 1, tau, delta) == Approx(-0.133214720e1).epsilon(1e-8));
+    }
+    
+    void payload() {
+
+        // Setup the fluids
+        int ierr = 0;
+        char flds[10000] = "Water";
+        SETFLUIDSdll(flds, ierr, 255);
+        char herr[255] = "";
+        if (ierr != 0) {
+            ERRMSGdll(ierr, herr, 255);
+        }
+        CAPTURE(herr);
+        CHECK(ierr == 0);
+        lowT();
+        highT();
+    }
+};
+TEST_CASE_METHOD(WaterAlpharDerivs, "Water alphar derivatives from IAPWS95", "[water],[alphar]") { payload(); };
+
+class StatelessVars : public REFPROPDLLFixture
+{
+public:
+    void payload() {
+        // These need splines on...
+        //std::vector<std::string> variable_names = { "TMAXT","PMAXT","DMAXT","TMAXP","PMAXP","DMAXP"};
+        
+        std::vector<std::string> variable_names = { "TC","PC","DC","TCEST","PCEST","DCEST","TRED","DRED","TMIN","TMAX","DMAX","PMAX" };
+        std::string joined = variable_names[0];
+        for (auto i = 1; i < variable_names.size(); ++i) {
+            joined += ";" + variable_names[i];
+        }
+        for (auto &&pair: get_binary_pairs()){
+            auto get_Tred = [this, &pair, &joined, &variable_names](bool forwards) {
+                auto flds = (forwards) ? pair.first + "*" + pair.second : pair.second + "*" + pair.first;
+                std::vector<double> z;
+                if (forwards){
+                    z = { 0.4, 0.6 };
+                }else{
+                    z = { 0.6, 0.4 };
+                };
+                auto Nvars = variable_names.size();
+                auto r = REFPROP(flds, " ", joined, 0, 0, 0, 0, 0, z); 
+                CAPTURE(r.herr);
+                CHECK(r.ierr < 100);
+                return std::vector<double>(r.Output.begin(), r.Output.begin() + Nvars);
+            };
+            auto forwards = get_Tred(true), back = get_Tred(false), diff = forwards;
+            for(auto i = 0; i < forwards.size(); ++i){ 
+                diff[i] = std::abs(forwards[i] - back[i]);
+                CAPTURE(forwards[i]);
+                CAPTURE(back[i]);
+                CHECK(forwards[i] > 0);
+                CHECK(diff[i]< 1e-10);
+            }
+        }
+    }
+};
+TEST_CASE_METHOD(StatelessVars, "Check all variables that do not require state information", "[Stateless]") { payload(); };
+
+class MIXSTP : public REFPROPDLLFixture
+{
+public:
+    void payload() {
+        std::string flds = "Methane * Helium" + std::string(500, '\0');
+        std::vector<double> z = {0.4, 0.6};
+        auto r = REFPROP(flds, "PT", "ETA", 1, 0, 0, 0.101325, 298, z);
+        CAPTURE(r.herr);
+        REQUIRE(r.ierr == 0);
+        double rho = r.Output[0];
+        CHECK(rho == Approx(15).epsilon(0.1));
+    }
+};
+TEST_CASE_METHOD(MIXSTP, "Mixture at STP", "[STP]") { payload(); };
+
+class OneN2 : public REFPROPDLLFixture
+{
+public:
+    void payload() {
+        std::string flds = "Nitrogen" + std::string(500, '\0');
+        std::vector<double> z(20, 1.0);
+        auto r = REFPROP(flds, "TD&", "ETA", 0, 0, 0, 300, 0, z);
+        CAPTURE(r.herr);
+        CHECK(r.ierr == 0);
+    }
+};
+TEST_CASE_METHOD(OneN2, "One call to transport for N2", "[OneN2]") { payload(); };
+
 class CheckZEZEstimated : public REFPROPDLLFixture
 {
 public:
     void payload() {
-        int MOLAR_BASE_SI = get_enum("MOLAR BASE SI");
         std::string flds = "R134A*R1234ZEZ" + std::string(500, '\0');
-        char * hfld = const_cast<char *>(flds.c_str());
-        char hin[255] = " ", hout[255] = "FIJMIX", hUnits[255], herr[255];
-        int iMass = 0, iFlag = 0, iUnit, ierr = 0;
-        double Output[200], x[20], y[20], x3[20], z[2] = { 0.5,0.5 }, q, a = 1, b = 2;
-        REFPROPdll(hfld, hin, hout, MOLAR_BASE_SI, iMass, iFlag, a, b, z, Output, hUnits, iUnit, x, y, x3, q, ierr, herr, 10000, 255, 255, 255, 255);
-        CAPTURE(herr);
-        CHECK(ierr == -117);
+        std::vector<double> z = { 0.5,0.5 };
+        auto r = REFPROP(flds, " ", "FIJMIX", 0, 0, 0, 1, 2, z);
+        CAPTURE(r.herr);
+        CHECK(r.ierr == -117);
     }
 };
 TEST_CASE_METHOD(CheckZEZEstimated, "CheckZEZEstimated", "[setup]") { payload(); };
@@ -237,11 +703,11 @@ public:
         char cfld[255] = "R1234ze";
         int ierr = 0;
         SETFLUIDSdll(cfld, ierr, 255);
+        char herr[255];
         if (ierr != 0) {
-            char herr[255];
             ERRMSGdll(ierr, herr, 255);
-            CAPTURE(herr);
         }
+        CAPTURE(herr);
         CHECK(ierr == 851);
     }
 };
@@ -254,12 +720,13 @@ public:
         for (auto &fld : get_pure_fluids_list()) {
             int ierr = 0; char cfld[10000];
             strcpy(cfld, fld.c_str());
+            CAPTURE(fld);
             SETFLUIDSdll(cfld, ierr, 255);
+            char herr[255];
             if (ierr != 0) {
-                char herr[255];
                 ERRMSGdll(ierr, herr, 255);
-                CAPTURE(herr);
             }
+            CAPTURE(herr);
             CHECK(ierr == 0);
         }
     }
@@ -310,12 +777,11 @@ public:
             int ierr = 0; char cfld[10000];
             strcpy(cfld, fld.c_str());
             SETFLUIDSdll(cfld, ierr, 255);
+            char herrsetup[255] = "";
             if (ierr != 0) {
-                int _ierr;
-                char herr[255];
-                ERRMSGdll(_ierr, herr, 255);
-                CAPTURE(herr);
+                ERRMSGdll(ierr, herrsetup, 255);
             }
+            CAPTURE(herrsetup);
             REQUIRE(ierr == 0);
 
             double x[1] = {1.0};
@@ -323,6 +789,7 @@ public:
             char herr[255];
             SUBLTdll(pt.T_K, x, p_kPa, ierr,herr,255);
             double p_Pa = p_kPa*1000;
+            CAPTURE(fld);
             CAPTURE(herr);
             REQUIRE(ierr == 0);
             CHECK(p_Pa == Approx(pt.p_Pa).epsilon(pt.eps_tol));

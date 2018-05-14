@@ -9,6 +9,16 @@
 #include <string>
 #include <cstring>
 
+struct REFPROPResult {
+    std::vector<double> Output;
+    std::string hUnits;
+    int iUnit;
+    std::vector<double> x, y, x3;
+    double q;
+    int ierr;
+    std::string herr;
+};
+
 class REFPROPDLLFixture
 {
 private:
@@ -19,7 +29,13 @@ public:
         REQUIRE(RPPREFIX != nullptr);
         REQUIRE(strlen(RPPREFIX) != 0);
 #if defined(__MANYSOISWINDOWS__)
+
+#if defined(IS_32_BIT)
+        std::string shared_library_filename = "REFPROP.DLL";
+#else
         std::string shared_library_filename = "REFPRP64.DLL";
+#endif
+
 #else
         std::string shared_library_filename = "librefprop.so";
 #endif
@@ -52,6 +68,7 @@ public:
     int get_enum(const std::string &key) {
         char henum[255], herr[255];
         int ienum = 0, ierr = 0;
+        REQUIRE(key.size() < 254);
         strcpy(henum, key.c_str());
         int ii = 0;
         GETENUMdll(ii, henum, ienum, ierr, herr, 255, 255);
@@ -60,7 +77,27 @@ public:
         REQUIRE(ierr==0);
         return ienum;
     }
+
+    REFPROPResult REFPROP(const std::string &_hFld, const std::string &_hIn, const std::string &_hOut, int unit_system, int iMass, int iFlag, double a, double b, std::vector<double> &z) {
+        char hFld[10000], hIn[255], hOut[255];
+        REQUIRE(_hFld.size() < 9999);
+        REQUIRE(_hIn.size() < 254);
+        REQUIRE(_hOut.size() < 254);
+        strcpy(hFld, _hFld.c_str());
+        strcpy(hIn, _hIn.c_str());
+        strcpy(hOut, _hOut.c_str());
+
+        std::vector<double> Output(200), x(20), y(20), x3(20);
+        double q;
+        int iUnit = 0, ierr = 0;
+        char herr[255] = "", hUnits[255] = "";
+
+        REFPROPdll(hFld, hIn, hOut, unit_system, iMass, iFlag, a, b, &(z[0]), &(Output[0]), hUnits, iUnit, &(x[0]), &(y[0]), &(x3[0]), q, ierr, herr, 10000, 255, 255, 255, 255);
+        REFPROPResult res  = {Output, hUnits, iUnit, x, y, x3, q, ierr, std::string(herr) };
+        return res;
+    }
     
+    /// This is the test that you must implement in the derived class
     virtual void payload() = 0;
 };
 
