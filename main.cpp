@@ -648,7 +648,7 @@ public:
                 CAPTURE(forwards[i]);
                 CAPTURE(back[i]);
                 CHECK(forwards[i] > 0);
-                CHECK(diff[i]< 1e-10);
+                CHECK(diff[i]< 1e-8);
             }
         }
     }
