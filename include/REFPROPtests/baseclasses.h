@@ -56,8 +56,8 @@ public:
         // Set the path in REFPROP
         SETPATHdll(RPPREFIX, strlen(RPPREFIX));
     }
-    ~REFPROPDLLFixture(){
-        RP.release();
+    virtual ~REFPROPDLLFixture(){
+        RP.reset();
     }
     // And now, totally magical, the use of variadic function arguments in concert with type macros
     // Add many methods, each corresponding to a 1-to-1 wrapper of a function from the shared library
