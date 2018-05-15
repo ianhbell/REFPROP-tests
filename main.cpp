@@ -50,10 +50,76 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Try to load all predefined mixtures", "[set
     }
 };
 
+struct PRTvalue{
+    std::string name;
+    double P, e, h, s, Cv, Cp, w, hjt;
+};
+
+class PRTValues : public REFPROPDLLFixture {
+
+public:
+    std::vector<PRTvalue> values;
+
+    PRTValues(){
+        values = {
+            { "Water", 664.5280477267937, 43035.59591183465, 45250.6894042573, 108.49384206969856, 25.613132127887006, 37.592214048055894, 397.54446474343916, 0.03201734475207269 }, //  P,e,h,s,Cv,Cp,w,hjt @ T=300K, D=0.3 mol/L
+            { "R134a", 650.0863532227113,40570.2765828015,42737.23109354387,177.0472458415633,77.80366842408034,91.88953773737126,146.45824859887492,0.018503812298546574 }, //  P,e,h,s,Cv,Cp,w,hjt @ T=300K, D=0.3 mol/L
+            { "R125", 666.5582366071258,40617.19554747021,42839.05633616063,188.53934651182294,87.16068192152147,100.28201827764514,137.10402282246275,0.013855649237427176 }, //  P,e,h,s,Cv,Cp,w,hjt @ T=300K, D=0.3 mol/L
+            { "R32", 689.5688079557667,26597.210341545142,28895.77303473103,120.74745119445683,35.197549998816484,46.468053459300315,231.3342557575627,0.019097476605463515 }, //  P,e,h,s,Cv,Cp,w,hjt @ T=300K, D=0.3 mol/L
+            { "Oxygen", 744.0959636690404,6187.147932994567,8667.467811891369,188.47141068953127,21.130313557754306,29.79997242389251,329.7224876590427,0.003001816856186118 }, //  P,e,h,s,Cv,Cp,w,hjt @ T=300K, D=0.3 mol/L
+            { "Nitrogen", 746.9198561991534,6181.056953198343,8670.78980719552,174.91015048214658,20.881876393724724,29.519732336576613,354.16374692556656,0.002377049562837003 }, //  P,e,h,s,Cv,Cp,w,hjt @ T=300K, D=0.3 mol/L
+            { "IOCTANE", 335.05048765100963,11426.144458078626,12542.979416915325,19.313792529870902,179.4520391885055,-67.83132968331836,22.396528812701423,1.136266574781018 }, //  P,e,h,s,Cv,Cp,w,hjt @ T=300K, D=0.3 mol/L
+            { "Hydrogen", 751.0055715311174,5518.583226302729,8021.935131406453,93.20087546247652,20.53415337157465,28.898914072411927,1324.3949408542335,-7.077550194483265e-05 }, //  P,e,h,s,Cv,Cp,w,hjt @ T=300K, D=0.3 mol/L
+            { "Helium", 750.5659596974368,3754.7788227019937,6256.665355026784,94.49020914450256,12.469015511006797,20.797959171736995,1022.6402482720125,-0.00034803585800532386 }, //  P,e,h,s,Cv,Cp,w,hjt @ T=300K, D=0.3 mol/L
+            { "Ethanol", 561.1846228123452,32185.498918476784,34056.11432785127,82.88998277489753,58.61827224817137,82.5914745200324,197.05251773167913,0.05569893032657596 }, //  P,e,h,s,Cv,Cp,w,hjt @ T=300K, D=0.3 mol/L
+            { "C12", -332.8388031040553,-30346.238589564367,-31455.701266577886,-102.43088941108591,277.4538276921272,259.0212552566496,0.0,-0.027526499530279865 }, //  P,e,h,s,Cv,Cp,w,hjt @ T=300K, D=0.3 mol/L
+            { "Argon", 744.1577242095819,3689.9157608508503,6170.441508216123,138.11712930970924,12.524550335809662,21.182803625340483,323.19179311520134,0.004102973433556607 }, //  P,e,h,s,Cv,Cp,w,hjt @ T=300K, D=0.3 mol/L
+        };
+    };
+    void payload() {
+        for (auto &val : values) {
+            int nc = 1;
+            {
+                int ierr = 0;
+                char h1[4] = "EOS", h2[4] = "NBS", h3[255] = "PRT", herr[255] = "";
+                SETMODdll(nc, h1, h2, h3, ierr, herr, 3, 3, 255, 255);
+            }
+            {
+                int ierr; char herr[255]="", hfld[10000], hhmx[255] = "HMX.BNC", href[4] = "DEF";
+                strcpy(hfld, (val.name + ".FLD").c_str());
+                SETUPdll(nc, hfld, hhmx, href, ierr, herr, 10000, 255, 3, 255);
+            }
+            double P, e, h, s, Cv, Cp, w, hjt;
+            double T = 300, D = 0.3, z[20] = {1.0};
+            THERMdll(T, D, z, P, e, h, s, Cv, Cp, w, hjt);
+            CHECK(P == Approx(val.P).epsilon(1e-2));
+            CHECK(e == Approx(val.e).epsilon(1e-2));
+            CHECK(h == Approx(val.h).epsilon(1e-2));
+            CHECK(s == Approx(val.s).epsilon(1e-2));
+            CHECK(Cv == Approx(val.Cv).epsilon(1e-2));
+            CHECK(Cp == Approx(val.Cp).epsilon(1e-2));
+            CHECK(w == Approx(val.w).epsilon(1e-2));
+            CHECK(hjt == Approx(val.hjt).epsilon(1e-2));
+        }
+    }
+};
+TEST_CASE_METHOD(PRTValues, "CHECK 9.1.1 values w/ PRT model", "[setup],[PH0]") { payload(); }
+
+
 TEST_CASE_METHOD(REFPROPDLLFixture, "Test all PH0", "[setup],[PH0]") {
     auto with_PH0 = fluids_with_PH0();
     REQUIRE(with_PH0.size() > 0);
     for (auto &&mix : with_PH0) {
+        std::vector<double> z(20,0.0);
+        auto r = REFPROP(mix, " ", "TRED;DRED", 1, 0, 0, 0, 0, z);
+        CHECK(r.ierr < 100);
+        double tau = 0.9, delta = 1.1, rho = delta*r.Output[1], T = r.Output[0]/tau;
+        
+        r = REFPROP(mix, "TD&", "PHIG00;PHIG01;PHIG10", 1, 0, 0, T, rho, z);
+        std::vector<double> normal = std::vector<double>(r.Output.begin(), r.Output.begin() + 3);
+
+        //r = REFPROP(mix, "TD&", "PHIG00;PHIG01;PHIG10", 1, 0, 0, T, rho, z);
+        //std::vector<double> normal = std::vector<double>(r.Output.begin(), r.Output.begin()+3);
         CHECK(false);
     }
 };
