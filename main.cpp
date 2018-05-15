@@ -103,7 +103,7 @@ public:
         }
     }
 };
-TEST_CASE_METHOD(PRTValues, "CHECK 9.1.1 values w/ PRT model", "[setup],[PH0]") { payload(); }
+TEST_CASE_METHOD(PRTValues, "CHECK 9.1.1 values w/ PRT model", "[setup]") { payload(); }
 
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Test all PH0", "[setup],[PH0]") {
@@ -115,12 +115,19 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Test all PH0", "[setup],[PH0]") {
         CHECK(r.ierr < 100);
         double tau = 0.9, delta = 1.1, rho = delta*r.Output[1], T = r.Output[0]/tau;
         
-        r = REFPROP(mix, "TD&", "PHIG00;PHIG01;PHIG10", 1, 0, 0, T, rho, z);
-        std::vector<double> normal = std::vector<double>(r.Output.begin(), r.Output.begin() + 3);
-
-        //r = REFPROP(mix, "TD&", "PHIG00;PHIG01;PHIG10", 1, 0, 0, T, rho, z);
-        //std::vector<double> normal = std::vector<double>(r.Output.begin(), r.Output.begin()+3);
-        CHECK(false);
+        r = REFPROP(mix, "TD&", "PHIG00;PHIG10;PHIG11;PHIG01;PHIG20", 1, 0, 0, T, rho, z);
+        std::vector<double> normal = std::vector<double>(r.Output.begin(), r.Output.begin() + 5); 
+        {
+            char hflag[255] = "Flip Cp0", herr[255] = "";
+            int jflag = 2, kflag = -1, ierr = 0;
+            FLAGSdll(hflag, jflag, kflag, ierr, herr, 255, 255);
+        }
+        r = REFPROP(mix, "TD&", "PHIG00;PHIG10;PHIG11;PHIG01;PHIG20", 1, 0, 0, T, rho, z);
+        std::vector<double> w_PH0 = std::vector<double>(r.Output.begin(), r.Output.begin()+5);
+        CHECK(normal.size() == w_PH0.size());
+        for (auto i = 0; i < normal.size(); ++i) {
+            CHECK(normal[i] == Approx(w_PH0[i]).margin(1e-3));
+        }
     }
 };
 
