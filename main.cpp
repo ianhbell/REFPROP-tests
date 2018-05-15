@@ -34,7 +34,7 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Try to load all predefined mixtures", "[set
         auto vals = get_predef_mix_values(mix+".MIX");
         // Turn on splines
         int ierr = 0; char herr[255] = "";
-        SATSPLNdll(&(r.x[0]), ierr, herr, 255U);
+        SATSPLNdll(&(z[0]), ierr, herr, 255U);
         // Get critical point
         double Tcspl = -1, Pcspl = -1, Dcspl = -1;
         double Wmol; WMOLdll(&(z[0]), Wmol);
@@ -44,6 +44,16 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Try to load all predefined mixtures", "[set
         CHECK(vals.pc == Approx(Pcspl));
         CHECK(vals.rhoc == Approx(Dcspl));
         // Check molar composition matches what we loaded
+        for (auto i = 0; i < vals.molar_composition.size(); ++i) {
+            CHECK(z[i] == Approx(vals.molar_composition[i]));
+        }
+    }
+};
+
+TEST_CASE_METHOD(REFPROPDLLFixture, "Test all PH0", "[setup],[PH0]") {
+    auto with_PH0 = fluids_with_PH0();
+    REQUIRE(with_PH0.size() > 0);
+    for (auto &&mix : with_PH0) {
         CHECK(false);
     }
 };

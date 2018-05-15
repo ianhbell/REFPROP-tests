@@ -135,4 +135,22 @@ static std::vector<std::string> get_predefined_mixtures_list() {
     return get_files_in_folder("MIXTURES", ".MIX");
 }
 
+static std::vector<std::string> fluids_with_PH0() {
+    std::vector<std::string> o;
+    for (auto &fluid : get_pure_fluids_list()) {
+        char* RPPREFIX = std::getenv("RPPREFIX");
+        REQUIRE(strlen(RPPREFIX) != 0);
+        namespace fs = boost::filesystem;
+        std::string path = (fs::path(RPPREFIX) / fs::path("FLUIDS") / fs::path(fluid+".FLD")).string();
+        std::string contents = get_file_contents(path);
+        for (auto &line : str_split(contents)) {
+            std::smatch match;
+            if (std::regex_search(line, match, std::regex(R"(^PH0)"))) {
+                o.emplace_back(fluid);
+            }
+        }
+    }
+    return o;
+}
+
 #endif
