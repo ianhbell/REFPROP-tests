@@ -99,7 +99,7 @@ static predef_mix_values get_predef_mix_values(const std::string &fname) {
     }
     boost::algorithm::trim(lines[2]);
     std::vector<double> molar_compositions;
-    auto Ncomp = static_cast<double>(string_to_double(lines[2]));
+    auto Ncomp = static_cast<int>(string_to_double(lines[2]));
     for (auto i = 0; i < Ncomp; ++i) {
         boost::algorithm::trim(lines[3+Ncomp+i]);
         molar_compositions.emplace_back(string_to_double(lines[3 + Ncomp + i]));
