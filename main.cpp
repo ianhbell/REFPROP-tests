@@ -24,18 +24,27 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check NBP of water", "[nbp]"){
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Try to load all predefined mixtures", "[setup]") {
     for (auto &&mix : get_predefined_mixtures_list()) {
-        std::vector<double> z(20,0.0);
-        auto r = REFPROP(mix, " ", "TRED", 1, 0, 0, 0.101325, 300, z);
-        CAPTURE(mix);
-        CAPTURE(r.herr);
-        CHECK(r.ierr < 100);
-    }
-    for (auto &&mix : get_predefined_mixtures_list()) {
+        // Load it
         std::vector<double> z(20, 0.0);
         auto r = REFPROP(mix+".MIX", " ", "TRED", 1, 0, 0, 0.101325, 300, z);
         CAPTURE(mix+".MIX");
         CAPTURE(r.herr);
         CHECK(r.ierr < 100);
+        // Get the predefined mixture critical values
+        auto vals = get_predef_mix_values(mix+".MIX");
+        // Turn on splines
+        int ierr = 0; char herr[255] = "";
+        SATSPLNdll(&(r.x[0]), ierr, herr, 255U);
+        // Get critical point
+        double Tcspl = -1, Pcspl = -1, Dcspl = -1;
+        double Wmol; WMOLdll(&(z[0]), Wmol);
+        CRITPdll(&(z[0]),Tcspl,Pcspl,Dcspl,ierr,herr,255U);
+        CHECK(vals.Wmol == Approx(Wmol)); 
+        CHECK(vals.Tc == Approx(Tcspl));
+        CHECK(vals.pc == Approx(Pcspl));
+        CHECK(vals.rhoc == Approx(Dcspl));
+        // Check molar composition matches what we loaded
+        CHECK(false);
     }
 };
 

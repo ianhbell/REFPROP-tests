@@ -4,8 +4,9 @@
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp> 
 #include <boost/algorithm/string/trim.hpp>
-
+#include <locale>
 #include <regex>
+#include <string>
 
 inline std::string get_file_contents(const std::string &filename) {
     using std::ios;
@@ -50,6 +51,60 @@ static std::vector<std::pair<std::string, std::string>> get_binary_pairs() {
         }
     }
     return pairs;
+}
+
+/// From CoolProp
+double string_to_double(const std::string &s){
+    std::stringstream ss(s);
+    char c = '.';
+
+    struct delim : std::numpunct<char> {
+        char m_c;
+        delim(char c) : m_c(c) {};
+        char do_decimal_point() const { return m_c; }
+    };
+
+    ss.imbue(std::locale(ss.getloc(), new delim(c)));
+    double f;
+    ss >> f;
+    if (ss.rdbuf()->in_avail() != 0) {
+        throw "fraction [%s] was not converted fully" + s;
+    }
+}
+
+struct predef_mix_values {
+    double Wmol, Tc, pc, rhoc;
+    std::vector<double> molar_composition;
+};
+static predef_mix_values get_predef_mix_values(const std::string &fname) {
+    char* RPPREFIX = std::getenv("RPPREFIX");
+    REQUIRE(strlen(RPPREFIX) != 0);
+    namespace fs = boost::filesystem;
+
+    fs::path target(fs::path(RPPREFIX) / fs::path("MIXTURES") / fs::path(fname));
+    std::string contents = get_file_contents(target.string());
+    auto lines = str_split(contents);
+
+    // Get Wmol and crit values
+    auto val_string = str_split(lines[1], " ");
+    std::vector<double> vals;
+    for (auto &c : val_string) {
+        boost::algorithm::trim(c); // inplace
+        if (!c.empty()){
+            vals.emplace_back(string_to_double(c));
+        }
+    }
+    if (vals.size() != 4) {
+        throw "Length of values is not 4 in "+ fname;
+    }
+    boost::algorithm::trim(lines[2]);
+    std::vector<double> molar_compositions;
+    auto Ncomp = static_cast<double>(string_to_double(lines[2]));
+    for (auto i = 0; i < Ncomp; ++i) {
+        boost::algorithm::trim(lines[3+Ncomp+i]);
+        molar_compositions.emplace_back(string_to_double(lines[3 + Ncomp + i]));
+    }
+    return predef_mix_values{vals[0], vals[1], vals[2], vals[3], molar_compositions};
 }
 
 static std::vector<std::string> get_files_in_folder(const std::string &folder, const std::string &extension) {
