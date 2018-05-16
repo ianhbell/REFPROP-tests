@@ -672,6 +672,11 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check all variables that do not require sta
         joined += ";" + variable_names[i];
     }
     for (auto &&pair : get_binary_pairs()) {
+        std::vector<double> zz(20,1.0);
+        if (REFPROP(pair.first + "*" + pair.second, " ", joined, 0, 0, 0, 0, 0, zz).ierr == 101) {
+            WARN("Unable to load the fluids:"+ pair.first + "*" + pair.second);
+            continue;
+        }
         auto get_Tred = [this, &pair, &joined, &variable_names](bool forwards) {
             auto flds = (forwards) ? pair.first + "*" + pair.second : pair.second + "*" + pair.first;
             std::vector<double> z;
