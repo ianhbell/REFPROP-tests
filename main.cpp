@@ -22,7 +22,7 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check NBP of water", "[nbp]"){
     CHECK(T == Approx(373.15).margin(0.1));
 };
 
-TEST_CASE_METHOD(REFPROPDLLFixture, "Try to load all predefined mixtures", "[setup]") {
+TEST_CASE_METHOD(REFPROPDLLFixture, "Try to load all predefined mixtures", "[setup],[predef_mixes]") {
     for (auto &&mix : get_predefined_mixtures_list()) {
         // Load it
         std::vector<double> z(20, 0.0);
@@ -577,29 +577,29 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check all alphar derivatives", "[alphar]") 
         }
         CHECK(ierr == 0);
 
-        double tau = 0.9, delta = 1.01;
+        double tau = 1.3, delta = 0.9;
         std::vector<double> z = { 0.0, 1.0 };
         auto deriv = [this, &z](int itau, int idelta, double tau, double delta) {
             double arderiv;
             PHIXdll(itau, idelta, tau, delta, &(z[0]), arderiv);
             return arderiv / (pow(tau, itau)*pow(delta, idelta));
         };
-        for (int itau = 0; itau <= 3; ++itau) {
-            for (int idelta = 0; idelta <= 3; ++idelta) {
+        for (int itau = 0; itau < 3; ++itau) {
+            for (int idelta = 0; idelta < 3; ++idelta) {
                 if (itau + idelta > 4 || itau + idelta == 0) {
                     continue;
                 }
                 // centered derivative based on the lower-order derivative
                 double numeric;
                 if (itau > 0) {
-                    double dtau = 1e-5;
+                    double dtau = 1e-6;
                     numeric = (-deriv(itau - 1, idelta, tau + 2 * dtau, delta)
                         + 8 * deriv(itau - 1, idelta, tau + dtau, delta)
                         - 8 * deriv(itau - 1, idelta, tau - dtau, delta)
                         + deriv(itau - 1, idelta, tau - 2 * dtau, delta)) / (12 * dtau);
                 }
                 else {
-                    double ddelta = 1e-5;
+                    double ddelta = 1e-6;
                     numeric = (-deriv(itau, idelta - 1, tau, delta + 2 * ddelta)
                         + 8 * deriv(itau, idelta - 1, tau, delta + ddelta)
                         - 8 * deriv(itau, idelta - 1, tau, delta - ddelta)
@@ -609,7 +609,7 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check all alphar derivatives", "[alphar]") 
                 CAPTURE(itau);
                 CAPTURE(idelta);
                 CAPTURE(joined);
-                CHECK(analytic == Approx(numeric).epsilon(1e-1));
+                CHECK(analytic == Approx(numeric).epsilon(1e-6));
             }
         }
     }
