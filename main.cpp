@@ -148,6 +148,46 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "CHECK 9.1.1 values w/ 4-component refrigera
     }
 }
 
+TEST_CASE_METHOD(REFPROPDLLFixture, "Unset splines", "[flags]") {
+    std::vector<double> z(20, 1.0); z[0] = 0.4; z[1] = 0.6;
+    
+    // Do normal calc for CRITP
+    auto r0 = REFPROP("R32 * PROPANE", "", "TC", 0, 0, 0, 0, 0, z);
+
+    // Same calc (with splines)
+    auto r1 = REFPROP("R32 * PROPANE", "", "TC", 0, 0, 1, 0, 0, z);
+
+    // Turn off splines, back to original
+    int k = 0;
+    FLAGS("SPLINES OFF", 1, k);
+    FLAGS("SpLiNeS oFf", 1, k); // check case sensitivity (should not be case sensitive)
+
+    // Final result, should be same as r0
+    auto r2 = REFPROP("R32 * PROPANE", "", "TC", 0, 0, 0, 0, 0, z);
+
+    CHECK(r0.ierr == r2.ierr);
+    CHECK(r0.Output[0] == Approx(r2.Output[0]).epsilon(1e-14));
+};
+
+TEST_CASE_METHOD(REFPROPDLLFixture, "Unset bounds", "[flags]") {
+    std::vector<double> z(20, 1.0); z[0] = 0.4; z[1] = 0.6;
+
+    // Do normal calc for propane below Ttrip
+    auto r0 = REFPROP("PROPANE", "TQ", "D", 0, 0, 0, 80, 0, z);
+    
+    // Turn off bounds
+    int k = 0;
+    FLAGS("BOUNDS", 1, k);
+    FLAGS("BoUnDs", 1, k); // check case sensitivity (should not be case sensitive)
+
+    // Same calc (with bounds off)
+    auto r1 = REFPROP("PROPANE", "TQ", "D", 0, 0, 0, 80, 0, z);
+
+    CHECK(r0.ierr == 1);
+    CHECK(r1.ierr == 0);
+    CHECK(r0.Output[0] == Approx(r1.Output[0]).epsilon(1e-14));
+};
+
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Test all PX0 for pures", "[setup],[PX0]") {
     auto with_PH0 = fluids_with_PH0_or_PX0();
@@ -162,7 +202,7 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Test all PX0 for pures", "[setup],[PX0]") {
         reload();
         r = REFPROP(fluid, "TD&", "PHIG00;PHIG10;PHIG11;PHIG01;PHIG20", 1, 0, 0, T, rho, z);
         CHECK(r.ierr == 0);
-        std::vector<double> default = std::vector<double>(r.Output.begin(), r.Output.begin() + 5);
+        std::vector<double> default_ = std::vector<double>(r.Output.begin(), r.Output.begin() + 5);
 
         reload();
         {
@@ -191,9 +231,9 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Test all PX0 for pures", "[setup],[PX0]") {
         std::vector<double> w_PH0 = std::vector<double>(r.Output.begin(), r.Output.begin()+5);
 
         CHECK(normal.size() == w_PH0.size());
-        CHECK(default.size() == w_PH0.size());
+        CHECK(default_.size() == w_PH0.size());
         for (auto i = 0; i < normal.size(); ++i) {
-            CHECK(normal[i] == Approx(default[i]).margin(1e-8)); 
+            CHECK(normal[i] == Approx(default_[i]).margin(1e-8)); 
             CHECK(normal[i] == Approx(w_PH0[i]).margin(1e-6));
         }
     }
