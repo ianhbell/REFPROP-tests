@@ -139,7 +139,7 @@ static std::vector<std::string> get_predefined_mixtures_list() {
     return get_files_in_folder("MIXTURES", ".MIX");
 }
 
-static std::vector<std::string> fluids_with_PH0() {
+static std::vector<std::string> fluids_with_PH0_or_PX0() {
     std::vector<std::string> o;
     for (auto &fluid : get_pure_fluids_list()) {
         char* RPPREFIX = std::getenv("RPPREFIX");
@@ -149,8 +149,9 @@ static std::vector<std::string> fluids_with_PH0() {
         std::string contents = get_file_contents(path);
         for (auto &line : str_split(contents)) {
             std::smatch match;
-            if (std::regex_search(line, match, std::regex(R"(^PH0)"))) {
+            if (std::regex_search(line, match, std::regex(R"(^P[HX]0)"))) {
                 o.emplace_back(fluid);
+                break;
             }
         }
     }

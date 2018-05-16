@@ -6,6 +6,7 @@
 
 #include "REFPROPtests/baseclasses.h"
 #include "REFPROPtests/utils.h"
+#include <numeric>
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Check NBP of water", "[nbp]"){
     int ierr = 1, nc = 1;
@@ -103,30 +104,97 @@ public:
         }
     }
 };
-TEST_CASE_METHOD(PRTValues, "CHECK 9.1.1 values w/ PRT model", "[setup]") { payload(); }
+TEST_CASE_METHOD(PRTValues, "CHECK 9.1.1 values w/ PRT model", "[setup],[911]") { payload(); }
 
+TEST_CASE_METHOD(REFPROPDLLFixture, "CHECK 9.1.1 values w/ 4-component refrigerant mixture", "[flash],[911]") {
+    std::vector<double> z(20, 0.0); for (auto i = 0; i < 4; ++i){ z[i] = 0.25; }
+    std::vector<double> vals_911 = { 1623.7467678192363, 33190.76537542725, 34814.51214324648, 156.16069343722648, 90.2775245338805, 162.39122497807574, 128.3393178811631, 0.025476123512775832 }; // p,e,h,s,cv,cp,w,htj @ 300 K, 1.0 mol/L
+    std::vector<std::string> keys = { "p","e","h","s","cv","cp","w", "JT" };
+    REQUIRE(std::accumulate(z.begin(), z.end(), 0.0) == Approx(1.0));
+    {
+        reload();
+        INFO("Default flags w/ Rgas=2");
+        auto r0 = REFPROP("R32 * R125 * R134A * R143A", "TD&", "W", 0, 0, 0, 300, 1.0, z);
+        REQUIRE(r0.ierr == 0);
+        int k = -1;
+        FLAGS("GAS CONSTANT", 2, k);
 
-TEST_CASE_METHOD(REFPROPDLLFixture, "Test all PH0", "[setup],[PH0]") {
-    auto with_PH0 = fluids_with_PH0();
-    REQUIRE(with_PH0.size() > 0);
-    for (auto &&mix : with_PH0) {
-        std::vector<double> z(20,0.0);
-        auto r = REFPROP(mix, " ", "TRED;DRED", 1, 0, 0, 0, 0, z);
-        CHECK(r.ierr < 100);
-        double tau = 0.9, delta = 1.1, rho = delta*r.Output[1], T = r.Output[0]/tau;
-        
-        r = REFPROP(mix, "TD&", "PHIG00;PHIG10;PHIG11;PHIG01;PHIG20", 1, 0, 0, T, rho, z);
-        std::vector<double> normal = std::vector<double>(r.Output.begin(), r.Output.begin() + 5); 
-        {
-            char hflag[255] = "Flip Cp0", herr[255] = "";
-            int jflag = 2, kflag = -1, ierr = 0;
-            FLAGSdll(hflag, jflag, kflag, ierr, herr, 255, 255);
+        for (auto i = 0; i < keys.size(); ++i) {
+            CAPTURE(keys[i]);
+            auto r = REFPROP("", "TD&", keys[i]+";R", 0, 0, 0, 300, 1.0, z);
+            REQUIRE(r.ierr == 0);
+            double R = r.Output[1];
+            CAPTURE(R);
+            auto v = vals_911[i];
+            CHECK(r.Output[0] == Approx(v));
         }
-        r = REFPROP(mix, "TD&", "PHIG00;PHIG10;PHIG11;PHIG01;PHIG20", 1, 0, 0, T, rho, z);
+    }
+    {
+        reload();
+        INFO("w/ PX0=1 & w/ Rgas=2");
+        auto r0 = REFPROP("R32 * R125 * R134A * R143A * R152A", "", "", 0, 0, 0, 300, 1.0, z); 
+        CAPTURE(r0.herr);
+        REQUIRE(r0.ierr == 0);
+        int k = -1;
+        FLAGS("PX0", 1, k);
+        FLAGS("GAS CONSTANT", 2, k);
+        for (auto i = 0; i < keys.size(); ++i) {
+            CAPTURE(keys[i]);
+            auto r = REFPROP("", "TD&", keys[i], 0, 0, 0, 300, 1.0, z);
+            REQUIRE(r.ierr == 0);
+            auto v = vals_911[i];
+            CHECK(r.Output[0] == Approx(v));
+        }
+    }
+}
+
+
+TEST_CASE_METHOD(REFPROPDLLFixture, "Test all PX0 for pures", "[setup],[PX0]") {
+    auto with_PH0 = fluids_with_PH0_or_PX0();
+    REQUIRE(with_PH0.size() > 0);
+    for (auto &&fluid : with_PH0) {
+        std::vector<double> z(20,1.0);
+        auto r = REFPROP(fluid, " ", "TRED;DRED", 1, 0, 0, 0, 0, z);
+        double tau = 0.9, delta = 1.1, rho = delta*r.Output[1], T = r.Output[0] / tau;
+        CAPTURE(fluid);
+        CHECK(r.ierr < 100);
+
+        reload();
+        r = REFPROP(fluid, "TD&", "PHIG00;PHIG10;PHIG11;PHIG01;PHIG20", 1, 0, 0, T, rho, z);
+        CHECK(r.ierr == 0);
+        std::vector<double> default = std::vector<double>(r.Output.begin(), r.Output.begin() + 5);
+
+        reload();
+        {
+            char hflag[255] = "PX0", herr[255] = "";
+            int jflag = 0, kflag = -1, ierr = 0;
+            FLAGSdll(hflag, jflag, kflag, ierr, herr, 255, 255);
+            CAPTURE(herr);
+            REQUIRE(ierr == 0);
+            REQUIRE(kflag == jflag);
+        }
+        r = REFPROP(fluid, "TD&", "PHIG00;PHIG10;PHIG11;PHIG01;PHIG20", 1, 0, 0, T, rho, z);
+        CHECK(r.ierr == 0);
+        std::vector<double> normal = std::vector<double>(r.Output.begin(), r.Output.begin() + 5); 
+
+        reload();
+        {
+            char hflag[255] = "PX0", herr[255] = "";
+            int jflag = 1, kflag = -1, ierr = 0;
+            FLAGSdll(hflag, jflag, kflag, ierr, herr, 255, 255);
+            CAPTURE(herr);
+            REQUIRE(ierr == 0);
+            REQUIRE(kflag == jflag);
+        }
+        r = REFPROP(fluid, "TD&", "PHIG00;PHIG10;PHIG11;PHIG01;PHIG20", 1, 0, 0, T, rho, z);
+        CHECK(r.ierr == 0);
         std::vector<double> w_PH0 = std::vector<double>(r.Output.begin(), r.Output.begin()+5);
+
         CHECK(normal.size() == w_PH0.size());
+        CHECK(default.size() == w_PH0.size());
         for (auto i = 0; i < normal.size(); ++i) {
-            CHECK(normal[i] == Approx(w_PH0[i]).margin(1e-3));
+            CHECK(normal[i] == Approx(default[i]).margin(1e-8)); 
+            CHECK(normal[i] == Approx(w_PH0[i]).margin(1e-6));
         }
     }
 };
