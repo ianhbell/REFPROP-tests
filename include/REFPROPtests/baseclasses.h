@@ -24,7 +24,9 @@ class REFPROPDLLFixture
 private:
     std::unique_ptr<NativeSharedLibraryWrapper> RP;
 public:
-    REFPROPDLLFixture(){
+    REFPROPDLLFixture(){ reload(); }
+
+    void reload(){
         char* RPPREFIX = std::getenv("RPPREFIX");
         REQUIRE(RPPREFIX != nullptr);
         REQUIRE(strlen(RPPREFIX) != 0);
@@ -96,7 +98,18 @@ public:
         REFPROPResult res  = {Output, hUnits, iUnit, x, y, x3, q, ierr, std::string(herr) };
         return res;
     }
-    
+    void FLAGS(const std::string &_hFlag, int jflag, int &kflag){
+        char hFlag[255] = "";
+        REQUIRE(_hFlag.size() < 254);
+        strcpy(hFlag, _hFlag.c_str());
+
+        char herr[255] = "";
+        int ierr = 0;
+        FLAGSdll(hFlag, jflag, kflag, ierr, herr, 255, 255);
+        CAPTURE(herr);
+        REQUIRE(ierr == 0);
+        REQUIRE(kflag == jflag);
+    }
 };
 
 #endif
