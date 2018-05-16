@@ -108,7 +108,9 @@ public:
         FLAGSdll(hFlag, jflag, kflag, ierr, herr, 255, 255);
         CAPTURE(herr);
         REQUIRE(ierr == 0);
-        REQUIRE(kflag == jflag);
+        if (jflag != -999){
+            REQUIRE(kflag == jflag);
+        }
     }
 };
 
