@@ -188,6 +188,38 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Unset bounds", "[flags]") {
     CHECK(r0.Output[0] == Approx(r1.Output[0]).epsilon(1e-14));
 };
 
+TEST_CASE_METHOD(REFPROPDLLFixture, "Check AGA8 stays on after SETFLUIDS", "[flags],[AGA8],[AGA8stayon]") {
+    std::vector<double> z(20, 1.0); z[0] = 0.4; z[1] = 0.6;
+
+    // Do normal calc w/ full EOS
+    auto r0 = REFPROP("Methane * Ethane", "TQ", "D", 0, 0, 0, 80, 0, z);
+
+    // Turn on AGA8 flag
+    auto r1 = REFPROP("", "flags", "aga8", 1, 0, 1, 80, 0, z);
+
+    int k0 = 0;
+    FLAGS("AGA8", -999, k0);
+    REQUIRE(k0 == 1);
+
+    // Set fluids
+    {
+        int ierr = 0; char cfld[10000] = "Methane * Ethane";
+        SETFLUIDSdll(cfld, ierr, 255);
+        char herrsetup[255] = "";
+        if (ierr != 0) {
+            ERRMSGdll(ierr, herrsetup, 255);
+        }
+        CAPTURE(herrsetup);
+        CHECK(ierr == 0);
+    }
+
+    // Check AGA8; should still be on
+    int k = 0;
+    FLAGS("AGA8", -999, k);
+    REQUIRE(k == 1);
+};
+
+
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Test all PX0 for pures", "[setup],[PX0]") {
     auto with_PH0 = fluids_with_PH0_or_PX0();
