@@ -337,6 +337,13 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Test PX0 for mixtures", "[setup],[PX0],[PX0
     REQUIRE(mixes_run > 0); // Make sure at least some tests ran
 };
 
+TEST_CASE_METHOD(REFPROPDLLFixture, "Molar mass of R134a", "[file_loading],[setup]") {
+    std::vector<double> z = { 1.0 };
+    int MOLAR_BASE_SI = get_enum("MOLAR BASE SI");
+    int MOLAR_SI = get_enum("MOLAR SI");
+    REQUIRE(REFPROP("R134A"," ","M",MOLAR_BASE_SI,0,0,0,0,z).Output[0] == Approx(REFPROP("R134A", " ", "M", MOLAR_SI, 0, 0, 0, 0, z).Output[0]/1000) );
+    REQUIRE(REFPROP("R134A", " ", "M", MOLAR_BASE_SI, 0, 0, 0, 0, z).Output[0] == Approx(0.10203).epsilon(1e-3));
+};
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Check fluid files with dash in them", "[file_loading],[setup]") {
     int ierr = 1, nc = 1;
