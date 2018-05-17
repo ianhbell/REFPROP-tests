@@ -926,8 +926,9 @@ public:
         {"FLUORINE", 50, 6.75998e2,0.001},
         {"N2O", 153.84615384615384, 0.00474895372822e6, 0.001 },
         {"PARAHYD", 10, 2.6206e2, 0.001},
-        {"HYDROGEN", 8.76, 44.4713821784, 0.001 },
-        {"NEON", 20, 3.81191E3,0.001 }
+        //{"HYDROGEN", 8.76, 44.4713821784, 0.001 }, NOT USED, updated sublimation curve is questionable
+        {"NEON", 20, 3.81191E3,0.001 },
+        {"D2O", 245, 0.327390934e2, 0.002} // IAPWS from Herrig
     };
     void payload() {
         for (auto &&pt : points){
