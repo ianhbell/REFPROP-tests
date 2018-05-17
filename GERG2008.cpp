@@ -247,6 +247,11 @@ public:
                 CAPTURE(herrsetup);
                 CHECK(ierr == 0);
             }
+            init();
+
+            int kflag = 0;
+            FLAGS("AGA8",-999,kflag);
+            CAPTURE(kflag);
 
             std::vector<double> zperc = mixture_comps[data.GasNo - 2]; // the first Gas No is 2 -> index of 0 in vector   
             CHECK(zperc.size() == 21);
@@ -266,7 +271,10 @@ public:
             CAPTURE(data.T_K);
             CAPTURE(data.D_molL);
             CAPTURE(data.GasNo);
-            auto r = REFPROP(joined, "TD&", "P;CV;CP;W", MOLAR_SI, iMass, iFlag, data.T_K, data.D_molL, z);
+            CAPTURE(z[0]);
+            CAPTURE(z[1]);
+            CAPTURE(z[2]);
+            auto r = REFPROP("", "TD&", "P;CV;CP;W", MOLAR_SI, iMass, iFlag, data.T_K, data.D_molL, z);
             CAPTURE(r.herr);
             CHECK(r.ierr == 0);
             CHECK(r.Output[0] == Approx(data.P_MPa).epsilon(2e-3));
