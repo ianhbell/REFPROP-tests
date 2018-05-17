@@ -235,6 +235,19 @@ public:
         }
 
         for (auto& data : validation_data) {
+
+            {
+                int ierr = 0; char cfld[10000];
+                strcpy(cfld, joined.c_str());
+                SETFLUIDSdll(cfld, ierr, 255);
+                char herrsetup[255] = "";
+                if (ierr != 0) {
+                    ERRMSGdll(ierr, herrsetup, 255);
+                }
+                CAPTURE(herrsetup);
+                CHECK(ierr == 0);
+            }
+
             std::vector<double> zperc = mixture_comps[data.GasNo - 2]; // the first Gas No is 2 -> index of 0 in vector   
             CHECK(zperc.size() == 21);
             std::vector<double> z(zperc.begin(), zperc.begin() + 20);
@@ -248,6 +261,8 @@ public:
             double sumz2 = std::accumulate(z.begin(), z.end(), 0.0);
             CHECK(sumz2 == Approx(1.0).epsilon(1e-12));
             int iMass = 0, iFlag = 0;
+
+            CAPTURE(joined);
             CAPTURE(data.T_K);
             CAPTURE(data.D_molL);
             CAPTURE(data.GasNo);
