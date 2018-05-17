@@ -274,7 +274,7 @@ public:
             CAPTURE(z[0]);
             CAPTURE(z[1]);
             CAPTURE(z[2]);
-            auto r = REFPROP("", "TD&", "P;CV;CP;W", MOLAR_SI, iMass, iFlag, data.T_K, data.D_molL, z);
+            auto r = REFPROP(joined, "TD&", "P;CV;CP;W", MOLAR_SI, iMass, iFlag, data.T_K, data.D_molL, z);
             CAPTURE(r.herr);
             CHECK(r.ierr == 0);
             CHECK(r.Output[0] == Approx(data.P_MPa).epsilon(2e-3));
