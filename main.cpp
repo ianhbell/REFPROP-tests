@@ -271,6 +271,73 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Test all PX0 for pures", "[setup],[PX0]") {
     }
 };
 
+TEST_CASE_METHOD(REFPROPDLLFixture, "Test PX0 for mixtures", "[setup],[PX0],[PX0mix]") {
+    auto with_PH0 = fluids_with_PH0_or_PX0();
+    REQUIRE(with_PH0.size() > 0);
+    int Ncomp = 5;
+    std::vector<double> z(Ncomp, 1/static_cast<double>(Ncomp)); 
+    int mixes_run = 0;
+    for (auto i0 = 0; i0 < with_PH0.size(); ++i0) {
+
+        // Build fluid string
+        std::string fluids = with_PH0[i0];
+        for (auto j = 1; j < Ncomp; ++j){
+            auto ii = (i0 + j) % (with_PH0.size() - 1); // mod to wrap around
+            fluids += " * " + with_PH0[ii];
+        }
+        
+        // Can you load and get reducing state?
+        auto r = REFPROP(fluids, " ", "TRED;DRED", 1, 0, 0, 0, 0, z);
+        double tau = 0.9, delta = 1.1, rho = delta*r.Output[1], T = r.Output[0] / tau;
+        if (r.ierr > 100) {
+            continue;
+        }
+        CAPTURE(fluids);
+        CHECK(r.ierr < 100);
+        mixes_run++;
+
+        reload();
+        r = REFPROP(fluids, "TD&", "PHIG00;PHIG10;PHIG11;PHIG01;PHIG20", 1, 0, 0, T, rho, z);
+        CHECK(r.ierr < 100);
+        std::vector<double> default_ = std::vector<double>(r.Output.begin(), r.Output.begin() + 5);
+
+        reload();
+        {
+            char hflag[255] = "PX0", herr[255] = "";
+            int jflag = 0, kflag = -1, ierr = 0;
+            FLAGSdll(hflag, jflag, kflag, ierr, herr, 255, 255);
+            CAPTURE(herr);
+            REQUIRE(ierr == 0);
+            REQUIRE(kflag == jflag);
+        }
+        r = REFPROP(fluids, "TD&", "PHIG00;PHIG10;PHIG11;PHIG01;PHIG20", 1, 0, 0, T, rho, z);
+        CHECK(r.ierr < 100);
+        std::vector<double> normal = std::vector<double>(r.Output.begin(), r.Output.begin() + 5);
+
+        reload();
+        {
+            char hflag[255] = "PX0", herr[255] = "";
+            int jflag = 1, kflag = -1, ierr = 0;
+            FLAGSdll(hflag, jflag, kflag, ierr, herr, 255, 255);
+            CAPTURE(herr);
+            REQUIRE(ierr == 0);
+            REQUIRE(kflag == jflag);
+        }
+        r = REFPROP(fluids, "TD&", "PHIG00;PHIG10;PHIG11;PHIG01;PHIG20", 1, 0, 0, T, rho, z);
+        CHECK(r.ierr < 100);
+        std::vector<double> w_PH0 = std::vector<double>(r.Output.begin(), r.Output.begin() + 5);
+
+        CHECK(normal.size() == w_PH0.size());
+        CHECK(default_.size() == w_PH0.size());
+        for (auto i = 0; i < normal.size(); ++i) {
+            CHECK(normal[i] == Approx(default_[i]).margin(1e-8));
+            CHECK(normal[i] == Approx(w_PH0[i]).margin(1e-6));
+        }
+    }
+    REQUIRE(mixes_run > 0); // Make sure at least some tests ran
+};
+
+
 TEST_CASE_METHOD(REFPROPDLLFixture, "Check fluid files with dash in them", "[file_loading],[setup]") {
     int ierr = 1, nc = 1;
     char herr[255], hfld[] = "-10.0.FLD", hhmx[] = "HMX.BNC", href[] = "DEF";
