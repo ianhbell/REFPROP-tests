@@ -197,6 +197,7 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check AGA8 stays on after SETFLUIDS", "[fla
     // Turn on AGA8 flag
     auto r1 = REFPROP("", "flags", "aga8", 1, 0, 1, 80, 0, z);
 
+    // Query the AGA8 flag
     int k0 = 0;
     FLAGS("AGA8", -999, k0);
     REQUIRE(k0 == 1);
