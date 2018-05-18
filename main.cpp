@@ -338,11 +338,23 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Test PX0 for mixtures", "[setup],[PX0],[PX0
     REQUIRE(mixes_run > 0); // Make sure at least some tests ran
 };
 
+TEST_CASE_METHOD(REFPROPDLLFixture, "Check mysterious bug with molar mass", "[R134AMM]") {
+    std::vector<double> z0(20,0.0); z0[0] = 1.0;
+    int MOLAR_BASE_SI = get_enum("MOLAR BASE SI");
+    //auto r0 = REFPROP("Water", "PQ", "T", MOLAR_BASE_SI, 0, 0, 101325, 0, z0);
+    /*int DEFAULT = get_enum("DEFAULT");
+    int SI = get_enum("SI");
+    MOLAR_BASE_SI = get_enum("MOLAR BASE SI");*/
+    std::vector<double> z1(20, 0.0); z1[0] = 1.0;
+    auto r1 = REFPROP("R134A", "PQ", "H;S;G;R;M;W", MOLAR_BASE_SI, 0, 0, 101325, 0, z1);
+    REQUIRE(r1.Output[4] == Approx(0.10203).epsilon(1e-3));
+};
+
 TEST_CASE_METHOD(REFPROPDLLFixture, "Molar mass of R134a", "[file_loading],[setup]") {
     std::vector<double> z = { 1.0 };
     int MOLAR_BASE_SI = get_enum("MOLAR BASE SI");
     int MOLAR_SI = get_enum("MOLAR SI");
-    REQUIRE(REFPROP("R134A"," ","M",MOLAR_BASE_SI,0,0,0,0,z).Output[0] == Approx(REFPROP("R134A", " ", "M", MOLAR_SI, 0, 0, 0, 0, z).Output[0]/1000) );
+    REQUIRE(REFPROP("R134A", " ", "M", MOLAR_BASE_SI, 0, 0, 0, 0, z).Output[0] == Approx(REFPROP("R134A", " ", "M", MOLAR_SI, 0, 0, 0, 0, z).Output[0] / 1000));
     REQUIRE(REFPROP("R134A", " ", "M", MOLAR_BASE_SI, 0, 0, 0, 0, z).Output[0] == Approx(0.10203).epsilon(1e-3));
 };
 
