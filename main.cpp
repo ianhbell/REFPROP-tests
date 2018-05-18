@@ -358,6 +358,16 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Molar mass of R134a", "[file_loading],[setu
     REQUIRE(REFPROP("R134A", " ", "M", MOLAR_BASE_SI, 0, 0, 0, 0, z).Output[0] == Approx(0.10203).epsilon(1e-3));
 };
 
+TEST_CASE_METHOD(REFPROPDLLFixture, "Qmass for single-phase point", "[flash],[props]") {
+    std::vector<double> z = { 1.0 };
+    int MOLAR_BASE_SI = get_enum("MOLAR BASE SI");
+    auto r = REFPROP("Propane", "TP", "Qmass", MOLAR_BASE_SI, 0, 0, 273.15, 101325, z);
+    auto Qmass2 = r.q;
+    REQUIRE(Qmass2 == Approx(998).margin(1));
+    auto Qmass = r.Output[0];
+    REQUIRE(Qmass == Approx(998).margin(1));
+};
+
 TEST_CASE_METHOD(REFPROPDLLFixture, "Check fluid files with dash in them", "[file_loading],[setup]") {
     int ierr = 1, nc = 1;
     char herr[255], hfld[] = "-10.0.FLD", hhmx[] = "HMX.BNC", href[] = "DEF";
