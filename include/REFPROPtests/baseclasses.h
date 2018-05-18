@@ -59,7 +59,7 @@ public:
         SETPATHdll(RPPREFIX, strlen(RPPREFIX));
     }
     virtual ~REFPROPDLLFixture(){
-        RP.reset();
+        RP.reset(nullptr);
     }
     // And now, totally magical, the use of variadic function arguments in concert with type macros
     // Add many methods, each corresponding to a 1-to-1 wrapper of a function from the shared library
