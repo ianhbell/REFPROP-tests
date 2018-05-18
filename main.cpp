@@ -763,6 +763,12 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "CAS# for PROPANE", "[CAS]") {
     CHECK(r.hUnits == "74-98-6");
 };
 
+TEST_CASE_METHOD(REFPROPDLLFixture, "Reload the DLL 100 times", "[100Reloads]") {
+    for (auto i =0; i < 100; ++i){ 
+        reload(); 
+    }
+};
+
 TEST_CASE_METHOD(REFPROPDLLFixture, "Torture test calling of DLL", "[Torture]") {
     {
         char hflag[255] = "Debug", herr[255] = "";
