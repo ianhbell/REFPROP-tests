@@ -223,6 +223,7 @@ class ValidationFixture : public REFPROPDLLFixture {
 public:
     std::vector<G08El> validation_data;
     virtual void init() = 0;
+    std::string MODEL;
 
     void payload() {
 
@@ -252,6 +253,7 @@ public:
             int kflag = 0;
             FLAGS("AGA8",-999,kflag);
             CAPTURE(kflag);
+            CAPTURE(MODEL);
 
             std::vector<double> zperc = mixture_comps[data.GasNo - 2]; // the first Gas No is 2 -> index of 0 in vector   
             CHECK(zperc.size() == 21);
@@ -291,6 +293,7 @@ public:
     void init() {
         std::vector<double>z(1, 1.0);
         auto r = REFPROP("","flags","gerg",1,0,1,0,0,z);
+        MODEL = "GERG-2008";
         CHECK(r.ierr == 0);
     }
     GERG2008ValidationFixture()
@@ -495,6 +498,7 @@ public:
     void init() {
         std::vector<double>z(1, 1.0);
         auto r = REFPROP("", "flags", "aga8", 1, 0, 1, 0, 0, z);
+        MODEL = "AGA8";
         CHECK(r.ierr == 0);
     }
     AGA8ValidationFixture()
