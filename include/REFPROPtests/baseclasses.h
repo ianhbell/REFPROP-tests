@@ -81,13 +81,13 @@ public:
     }
 
     REFPROPResult REFPROP(const std::string &_hFld, const std::string &_hIn, const std::string &_hOut, int unit_system, int iMass, int iFlag, double a, double b, std::vector<double> &z) {
-        char hFld[10000], hIn[255], hOut[255];
+        char hFld[10001], hIn[256], hOut[256];
         REQUIRE(_hFld.size() < 9999);
         REQUIRE(_hIn.size() < 254);
         REQUIRE(_hOut.size() < 254);
-        strcpy(hFld, _hFld.c_str());
-        strcpy(hIn, _hIn.c_str());
-        strcpy(hOut, _hOut.c_str());
+        strcpy(hFld, (_hFld + std::string(10000-_hFld.size(),' ')).c_str());
+        strcpy(hIn, (_hIn + std::string(255-_hIn.size(), ' ')).c_str());
+        strcpy(hOut, (_hOut + std::string(255-_hOut.size(), ' ')).c_str());
 
         std::vector<double> Output(200), x(20), y(20), x3(20);
         double q;
