@@ -43,7 +43,7 @@ public:
             { 1.037058033,{ "DE","ethane;.5;propane;.5","tvap","SI",300 } },
             { 0.697614699,{ "xmole","R410A.MIX",1 } },
             { 0.5        ,{ "XMASS","R410A.MIX",1 } },
-            { 439.4484635,{ "DLIQ","methane;ethane;propane;butane|0.8;0.15;0.03;0.02","TD","SI",150,200 } },
+            { 440.2592921,{ "DLIQ","methane;ethane;propane;butane|0.8;0.15;0.03;0.02","TD","SI",150,200 } },
             { 49.71894258,{ "F(2)","propane;R125|10;90","TH>","E",-20,72 } },
             { 0.89854362 ,{ "FC(2)","N2;CO2|0.6;0.4","TQ","MKS",200,1 } },
             { 0.231604716,{ "xmass","air.mix","TD","molar SI",80,12,3 } },
