@@ -537,20 +537,17 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check full absolute paths are ok", "[setup]
         std::string fld0 = std::string(std::getenv("RPPREFIX")) + "FLUIDS/R32.FLD";
         std::string fld1 = std::string(std::getenv("RPPREFIX")) + "FLUIDS/PROPANE.FLD";
         std::string fld = fld0 + std::string(1, sep) + fld1;
-        std::string flds = fld + std::string(10000 - fld.size(), '\0');
-        char hfld[10000];
-        strcpy(hfld, flds.c_str());
-        char hin[255] = "", hout[255] = "FDIR(1)", hUnits[255], herr[255];
-        int iMass = 0, iFlag = 0, iUnit = 0, ierr = 0;
-        double Output[200], x[20], y[20], x3[20], z[20] = { 0.5,0.5 }, q, a = 1, Q = 0.0;
-        REFPROPdll(hfld, hin, hout, MOLAR_BASE_SI, iMass, iFlag, a, Q, z, Output, hUnits, iUnit, x, y, x3, q, ierr, herr, 10000U, 255U, 255U, 255U, 255U);
-        CAPTURE(hUnits);
+        std::string flds = fld + std::string(10000 - fld.size()-2, '\0');
+        int iMass = 0, iFlag = 0;
+        std::vector<double> z = { 0.5,0.5 }; double a = 1, Q = 0.0;
+        auto r = REFPROP(flds, "", "FDIR(1)", MOLAR_BASE_SI, iMass, iFlag, a, Q, z);
+        CAPTURE(r.hUnits);
         CAPTURE(sep);
-        CAPTURE(herr);
-        std::string str = std::string(herr);
+        CAPTURE(r.herr);
+        std::string str = std::string(r.herr);
         boost::algorithm::trim(str);
         CHECK(str == fld0);
-        CHECK(ierr == -999);
+        CHECK(r.ierr == -999);
     }
     {
         std::string flds = std::string(std::getenv("RPPREFIX")) + "FLUIDS/R32.FLD" + "|" + std::string(std::getenv("RPPREFIX")) + "FLUIDS/PROPANE.FLD";
