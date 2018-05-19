@@ -440,19 +440,41 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "EnablePR", "[setup]") {
     REQUIRE(mod == "PR ");
 };
 
+TEST_CASE_METHOD(REFPROPDLLFixture, "Check ancillaries for pure fluids", "[flash],[ancillary]") {
+    for (auto &fld : get_pure_fluids_list()) {
+        {
+            std::vector<double> z(20,1.0); 
+            int MOLAR_BASE_SI = get_enum("MOLAR BASE SI");
+            auto rs = REFPROP(fld, "", "TC", MOLAR_BASE_SI, 0, 0, 0, 0, z);
+            CAPTURE(fld);
+            CAPTURE(rs.herr);
+            CAPTURE(rs.ierr);
+            double Tc = rs.Output[0];
+            auto rv = REFPROP(fld, "Tq", "P;DLIQ;DVAP", MOLAR_BASE_SI, 0, 0, 0.9*Tc, 0, z); // VLE
+            auto ra = REFPROP(fld, "", "ANC-TP;ANC-TDL;ANC-TDV", MOLAR_BASE_SI, 0, 0, 0.9*Tc, 0, z); // Ancillary
+            int ierr = 0; std::string herr;
+            SETFLUIDS(fld, ierr, herr);
+            CAPTURE(herr);
+            REQUIRE(ierr == 0);
+            std::vector<std::string> names = {"ANC-TP","ANC-TDL","ANC-TDV"};
+            for (auto i = 0; i < 3; ++i) {
+                std::string name = names[i];
+                double err_perc = std::abs(rv.Output[i]/ ra.Output[i]-1)*100;
+                CAPTURE(err_perc);
+                CAPTURE(name);
+                CHECK(ra.Output[i] == Approx(rv.Output[i]).epsilon(0.001));
+            }
+        }
+    }
+}
+
 TEST_CASE_METHOD(REFPROPDLLFixture, "Check NBP for all pure fluids (when possible)", "[flash]"){ 
     for (auto &fld : get_pure_fluids_list()) {
         {
-            int ierr = 0;
-            char cfld[10000];
-            strcpy(cfld, fld.c_str());
-            SETFLUIDSdll(cfld, ierr, 255);
-            char herrsetup[255] = "";
-            if (ierr != 0) {
-                ERRMSGdll(ierr, herrsetup, 255);
-            }
-            CAPTURE(herrsetup);
-            CAPTURE(cfld);
+            int ierr = 0; std::string herr;
+            SETFLUIDS(fld, ierr, herr);
+            CAPTURE(herr);
+            CAPTURE(fld);
             REQUIRE(ierr == 0);
         }
 
@@ -766,6 +788,38 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Critical TC1, VC1", "[crit]") {
     CRITPdll(z, Tcrit, pcrit_kPa, dcrit_mol_L, ierr, herr2, 255);
     CAPTURE(herr2);
     CHECK(ierr <= 0); 
+};
+
+TEST_CASE_METHOD(REFPROPDLLFixture, "Ancillary curves for D2O of Herrig", "[D2O]") {
+    std::vector<double> z(20,1.0);
+    
+    // Invalid!
+    auto a1 = REFPROP("heavy water", "TD&", "TMELT", 0, 0, 0, 270, 0, z);
+    CHECK(a1.ierr > 100); 
+
+    auto a2 = REFPROP("heavy water", "TMELT", "P", 0, 0, 0, 270, 0, z);
+    int ierr = 0; char herr[255] = ""; double T = 270, p_kPa = -1; MELTTdll(T, &(z[0]), p_kPa, ierr, herr, 255U);
+    
+    CHECK(a2.Output[0] == Approx(0.837888413e5));
+    CHECK(p_kPa == Approx(0.837888413e5));
+
+    // IAPWS from Herrig (several creative ways of getting p_sub(T))
+    std::vector<REFPROPResult> b(33);
+    b[3] = REFPROP("D2O", "TD&", "TSUBL", 0, 0, 0, 245, 0, z);
+    b[4] = REFPROP("D2O", "TD&", "SUBL-TP", 0, 0, 0, 245, 0, z);
+    b[5] = REFPROP("D2O", "TQ&", "SUBL-TP", 0, 0, 0, 245, -1, z);
+    b[6] = REFPROP("D2O", "TSUBL", "TSUBL;PSUBL", 0, 0, 0, 245, -1, z);
+    b[7] = REFPROP("D2O", "SUBL-TP", "PSUBL", 0, 0, 0, 245, -1, z);
+    b[8] = REFPROP("D2O", "TSUBL", "PSUBL", 0, 0, 0, 245, -1, z);
+    b[9] = REFPROP("D2O", "TSUBL", "P", 0, 0, 0, 245, -1, z);
+    {
+        int ierr2 = 0; char herr2[256] = ""; double zz[20] = { 1.0 }; double T2 = 245, p_kPa2 = -1; SUBLTdll(T2, zz, p_kPa2, ierr2, herr2, 255U);
+        b[10].Output = std::vector<double>(20,0); b[10].Output[0] = p_kPa;
+    }
+    for (auto i = 3; i < 11; ++i){
+        CAPTURE(i);
+        CHECK(b[i].Output[0] == Approx(0.327390934e-1));
+    }
 };
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "CAS# for PROPANE", "[CAS]") { 
