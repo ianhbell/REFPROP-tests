@@ -104,7 +104,7 @@ public:
         }
     }
 };
-TEST_CASE_METHOD(PRTValues, "CHECK 9.1.1 values w/ PRT model", "[setup],[911]") { payload(); }
+TEST_CASE_METHOD(PRTValues, "CHECK 9.1.1 values w/ PRT model", "[911]") { payload(); }
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "CHECK 9.1.1 values w/ 4-component refrigerant mixture", "[flash],[911]") {
     std::vector<double> z(20, 0.0); for (auto i = 0; i < 4; ++i){ z[i] = 0.25; }
