@@ -219,9 +219,9 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check AGA8 stays on after SETFLUIDS", "[fla
 
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Test all PX0 for pures", "[setup],[PX0]") {
-    auto with_PH0 = fluids_with_PH0_or_PX0();
-    REQUIRE(with_PH0.size() > 0);
-    for (auto &&fluid : with_PH0) {
+    auto flds_with_PH0 = fluids_with_PH0_or_PX0();
+    REQUIRE(flds_with_PH0.size() > 0);
+    for (auto &&fluid : flds_with_PH0) {
         std::vector<double> z(20,1.0);
         auto r = REFPROP(fluid, " ", "TRED;DRED", 1, 0, 0, 0, 0, z);
         double tau = 0.9, delta = 1.1, rho = delta*r.Output[1], T = r.Output[0] / tau;
@@ -257,13 +257,13 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Test all PX0 for pures", "[setup],[PX0]") {
         }
         r = REFPROP(fluid, "TD&", "PHIG00;PHIG10;PHIG11;PHIG01;PHIG20", 1, 0, 0, T, rho, z);
         CHECK(r.ierr == 0);
-        std::vector<double> w_PH0 = std::vector<double>(r.Output.begin(), r.Output.begin()+5);
+        std::vector<double> with_PX0 = std::vector<double>(r.Output.begin(), r.Output.begin()+5);
 
-        CHECK(normal.size() == w_PH0.size());
-        CHECK(default_.size() == w_PH0.size());
+        CHECK(normal.size() == with_PX0.size());
+        CHECK(default_.size() == with_PX0.size());
         for (auto i = 0; i < normal.size(); ++i) {
             CHECK(normal[i] == Approx(default_[i]).margin(1e-8)); 
-            CHECK(normal[i] == Approx(w_PH0[i]).margin(1e-6));
+            CHECK(normal[i] == Approx(with_PX0[i]).margin(1e-6));
         }
     }
 };
