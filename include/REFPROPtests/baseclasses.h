@@ -43,6 +43,7 @@ public:
 #endif
 
         std::string shared_library_path = std::string(RPPREFIX) + shared_library_filename;
+        CAPTURE(shared_library_path);
 
 #if defined(__MANYSOISWINDOWS__)
         auto load_method = AbstractSharedLibraryWrapper::load_method::FROM_FILE;
