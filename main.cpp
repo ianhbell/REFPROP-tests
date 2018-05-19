@@ -402,6 +402,16 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check fluid files with dash in them", "[fil
     REQUIRE(ierr == 0);
 };
 
+TEST_CASE_METHOD(REFPROPDLLFixture, "Check fluid files with unicode in them", "[file_loading],[setup]") {
+    int ierr = 1, nc = 1;
+    char herr[255], hfld[] = "�t�.FLD", hhmx[] = "HMX.BNC", href[] = "DEF";
+    char nopath[255] = "";
+    SETPATHdll(nopath, 255);
+    SETUPdll(nc, hfld, hhmx, href, ierr, herr, 10000, 255, 3, 255);
+    CAPTURE(herr);
+    REQUIRE(ierr == 0);
+};
+
 TEST_CASE_METHOD(REFPROPDLLFixture, "Check TP flash of multicomponent mixture", "[flash]"){
     char hfld[10000] = "NITROGEN|WATER|CO2|H2S|METHANE|ETHANE|PROPANE|ISOBUTAN|BUTANE|IPENTANE|PENTANE";
     double z[] = { 1.2000036000108E-03,7.000021000063E-06,.828792486377459,2.000006000018E-04,.160400481201444,7.6000228000684E-03,1.4000042000126E-03,1.000003000009E-04,2.000006000018E-04,0,1.000003000009E-04 };
