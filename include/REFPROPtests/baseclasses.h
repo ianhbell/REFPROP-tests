@@ -101,9 +101,9 @@ public:
     void FLAGS(const std::string &_hFlag, int jflag, int &kflag){
         char hFlag[255] = "";
         REQUIRE(_hFlag.size() < 254);
-        strcpy(hFlag, _hFlag.c_str());
+        strcpy(hFlag, (_hFlag.c_str() + std::string(255 - _hFlag.size(), ' ')).c_str());
 
-        char herr[255] = "";
+        char herr[256] = "";
         int ierr = 0;
         FLAGSdll(hFlag, jflag, kflag, ierr, herr, 255, 255);
         CAPTURE(herr);
