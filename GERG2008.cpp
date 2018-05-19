@@ -222,13 +222,17 @@ static std::vector<std::string> components = { "methane", "nitrogen", "CO2", "et
 class ValidationFixture : public REFPROPDLLFixture {
 public:
     std::vector<G08El> validation_data;
-    virtual void init() = 0;
-    std::string MODEL;
-
+    std::string FLAG;
+    int FLAG_value;
+    void set_flag() {
+        std::vector<double>z(1, 1.0);
+        auto r = REFPROP("", "flags", FLAG, 1, 0, FLAG_value, 0, 0, z);
+        CHECK(r.ierr == 0);
+    }
     void payload() {
 
         int MOLAR_SI = get_enum("MOLAR SI   ");
-        init();
+        set_flag();
         
         std::string joined = components[0];
         for (auto i = 1; i < components.size() - 1; ++i) {
@@ -238,7 +242,7 @@ public:
         for (auto& data : validation_data) {
 
             {
-                int ierr = 0; char cfld[10000];
+                int ierr = 0; char cfld[10001];
                 strcpy(cfld, joined.c_str());
                 SETFLUIDSdll(cfld, ierr, 255);
                 char herrsetup[255] = "";
@@ -248,12 +252,12 @@ public:
                 CAPTURE(herrsetup);
                 CHECK(ierr == 0);
             }
-            init();
+            set_flag();
 
             int kflag = 0;
-            FLAGS("AGA8",-999,kflag);
+            FLAGS(FLAG,-999,kflag);
             CAPTURE(kflag);
-            CAPTURE(MODEL);
+            CAPTURE(FLAG);
 
             std::vector<double> zperc = mixture_comps[data.GasNo - 2]; // the first Gas No is 2 -> index of 0 in vector   
             CHECK(zperc.size() == 21);
@@ -276,7 +280,7 @@ public:
             CAPTURE(z[0]);
             CAPTURE(z[1]);
             CAPTURE(z[2]);
-            auto r = REFPROP(joined, "TD&", "P;CV;CP;W", MOLAR_SI, iMass, iFlag, data.T_K, data.D_molL, z);
+            auto r = REFPROP("", "TD&", "P;CV;CP;W", MOLAR_SI, iMass, iFlag, data.T_K, data.D_molL, z);
             CAPTURE(r.herr);
             CHECK(r.ierr == 0);
             CHECK(r.Output[0] == Approx(data.P_MPa).epsilon(2e-3));
@@ -290,14 +294,11 @@ public:
 class GERG2008ValidationFixture : public ValidationFixture
 {
 public:
-    void init() {
-        std::vector<double>z(1, 1.0);
-        auto r = REFPROP("","flags","gerg",1,0,1,0,0,z);
-        MODEL = "GERG-2008";
-        CHECK(r.ierr == 0);
-    }
+    
     GERG2008ValidationFixture()
     {
+        FLAG = "GERG 2008";
+        FLAG_value = 1;
         validation_data = {
             { 2,190.68,11.0,4.62270367011,45.4451259446,7883.3949099,229.601025004 },
             { 3,190.5,11.0,4.61746427515,45.5151912828,7771.78810714,229.085523569 },
@@ -495,14 +496,10 @@ TEST_CASE_METHOD(GERG2008ValidationFixture, "Check GERG-2008 calculations agains
 class AGA8ValidationFixture : public ValidationFixture
 {
 public:
-    void init() {
-        std::vector<double>z(1, 1.0);
-        auto r = REFPROP("", "flags", "aga8", 1, 0, 1, 0, 0, z);
-        MODEL = "AGA8";
-        CHECK(r.ierr == 0);
-    }
     AGA8ValidationFixture()
     {
+        FLAG = "AGA8";
+        FLAG_value = 1;
         validation_data = {
             { 2,190.68,11.0,4.6187527874,45.8166875508,3989.11077365,235.991705788 },
             { 3,190.5,11.0,4.61810238445,45.919696811,3625.67991526,235.391572163 },
