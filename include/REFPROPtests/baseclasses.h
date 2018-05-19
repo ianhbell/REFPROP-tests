@@ -99,8 +99,8 @@ public:
         return res;
     }
     void FLAGS(const std::string &_hFlag, int jflag, int &kflag){
-        char hFlag[255] = "";
-        REQUIRE(_hFlag.size() < 254);
+        char hFlag[256] = "";
+        REQUIRE(_hFlag.size() <= 255);
         strcpy(hFlag, (_hFlag.c_str() + std::string(255 - _hFlag.size(), ' ')).c_str());
 
         char herr[256] = "";
