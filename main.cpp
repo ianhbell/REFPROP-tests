@@ -360,6 +360,16 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Molar mass of R134a", "[file_loading],[setu
     REQUIRE(REFPROP("R134A", " ", "M", MOLAR_BASE_SI, 0, 0, 0, 0, z).Output[0] == Approx(0.10203).epsilon(1e-3));
 };
 
+TEST_CASE_METHOD(REFPROPDLLFixture, "Check super long list of fluids", "[100comps],[setup]") {
+    std::vector<double> z = { 1.0 };
+    std::string flds = "Water";
+    for (auto i = 0; i < 100; ++i) { flds += "*Water"; }
+    int MOLAR_BASE_SI = get_enum("MOLAR BASE SI");
+    auto r = REFPROP(flds, " ", "M", MOLAR_BASE_SI, 0, 0, 0, 0, z);
+    CAPTURE(r.herr);
+    REQUIRE(r.ierr == 109);
+};
+
 TEST_CASE_METHOD(REFPROPDLLFixture, "Test mixture models of Thol", "[flash],[TholLNG]") {
     std::vector<double> z = { 0.5, 0.5 };
     int MOLAR_BASE_SI = get_enum("MOLAR BASE SI");
