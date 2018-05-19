@@ -26,7 +26,7 @@ static std::vector<std::string> str_split(const std::string &s,
     std::vector<std::string> o;
     do {
         current = next + 1;
-        next = s.find_first_of(delimiters, current);
+        next = static_cast<int>(s.find_first_of(delimiters, current));
         o.push_back(s.substr(current, next - current));
     } while (next != std::string::npos);
     return o;
