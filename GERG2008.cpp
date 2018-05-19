@@ -243,7 +243,7 @@ public:
 
             {
                 int ierr = 0; char cfld[10001];
-                strcpy(cfld, joined.c_str());
+                strcpy(cfld, (joined + std::string(10000-joined.size(), ' ')).c_str());
                 SETFLUIDSdll(cfld, ierr, 255);
                 char herrsetup[255] = "";
                 if (ierr != 0) {

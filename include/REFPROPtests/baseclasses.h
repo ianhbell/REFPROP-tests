@@ -56,7 +56,10 @@ public:
         REQUIRE(loaded_properly);
         
         // Set the path in REFPROP
-        SETPATHdll(RPPREFIX, strlen(RPPREFIX));
+        std::string path(RPPREFIX);
+        char hpth[256] = "";
+        strcpy(hpth, (path + std::string(255-path.size(), ' ')).c_str());
+        SETPATHdll(hpth, 255);
     }
     virtual ~REFPROPDLLFixture(){
         RP.reset(nullptr);
@@ -68,10 +71,10 @@ public:
     #undef X
     
     int get_enum(const std::string &key) {
-        char henum[255], herr[255];
+        char henum[256], herr[256];
         int ienum = 0, ierr = 0;
         REQUIRE(key.size() < 254);
-        strcpy(henum, key.c_str());
+        strcpy(henum, (key + std::string(255-key.size(), ' ')).c_str());
         int ii = 0;
         GETENUMdll(ii, henum, ienum, ierr, herr, 255, 255);
         CAPTURE(key);
