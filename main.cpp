@@ -374,17 +374,18 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Test mixture models of Thol", "[flash],[Tho
     std::vector<double> z = { 0.5, 0.5 };
     int MOLAR_BASE_SI = get_enum("MOLAR BASE SI");
     
-    CHECK(REFPROP("Methane * Butane", "TP", "D", MOLAR_BASE_SI, 0, 0, 500, 1e6, z).Output[0] == Approx(244.933));
-    CHECK(REFPROP("Methane * Butane", "TP", "CP", MOLAR_BASE_SI, 0, 0, 500, 1e6, z).Output[0] == Approx(99.026));
-    CHECK(REFPROP("Methane * Butane", "TP", "CV", MOLAR_BASE_SI, 0, 0, 500, 1e6, z).Output[0] == Approx(89.623));
-    CHECK(REFPROP("Methane * Butane", "TP", "W", MOLAR_BASE_SI, 0, 0, 500, 1e6, z).Output[0] == Approx(345.686));
 
-    CHECK(REFPROP("Methane * isobutane", "TP", "W", MOLAR_BASE_SI, 0, 0, 500, 1e6, z).Output[0] == Approx(345.758));
-    CHECK(REFPROP("Methane * isobutane", "TP", "D", MOLAR_BASE_SI, 0, 0, 500, 1e6, z).Output[0] == Approx(244.669));
+    CHECK(REFPROP("Methane * Butane", "TP", "D", MOLAR_BASE_SI, 0, 0, 500, 1e6, z).Output[0] == Approx(244.686));
+    CHECK(REFPROP("Methane * Butane", "TP", "CP", MOLAR_BASE_SI, 0, 0, 500, 1e6, z).Output[0] == Approx(99.050));
+    CHECK(REFPROP("Methane * Butane", "TP", "CV", MOLAR_BASE_SI, 0, 0, 500, 1e6, z).Output[0] == Approx(89.637));
+    CHECK(REFPROP("Methane * Butane", "TP", "W", MOLAR_BASE_SI, 0, 0, 500, 1e6, z).Output[0] == Approx(346.02));
+
+    CHECK(REFPROP("Methane * isobutane", "TP", "W", MOLAR_BASE_SI, 0, 0, 500, 1e6, z).Output[0] == Approx(345.720358243));
+    CHECK(REFPROP("Methane * isobutane", "TP", "D", MOLAR_BASE_SI, 0, 0, 500, 1e6, z).Output[0] == Approx(244.6790489429));
     CHECK(REFPROP("Methane * pentane", "TP", "W", MOLAR_BASE_SI, 0, 0, 500, 1e6, z).Output[0] == Approx(312.623));
     CHECK(REFPROP("Methane * pentane", "TP", "CP", MOLAR_BASE_SI, 0, 0, 500, 1e6, z).Output[0] == Approx(116.636));
     CHECK(REFPROP("Methane * pentane", "TP", "W", MOLAR_BASE_SI, 0, 0, 500, 1e6, z).Output[0] == Approx(311.216));
-    CHECK(REFPROP("Methane * isopentane", "TP", "D", MOLAR_BASE_SI, 0, 0, 500, 1e6, z).Output[0] == Approx(247.648));
+    CHECK(REFPROP("Methane * isopentane", "TP", "D", MOLAR_BASE_SI, 0, 0, 500, 1e6, z).Output[0] == Approx(247.6510495243));
 };
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Qmass for single-phase point", "[flash],[props]") {
