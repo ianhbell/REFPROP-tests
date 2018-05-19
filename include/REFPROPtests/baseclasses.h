@@ -72,7 +72,7 @@ public:
     #undef X
     
     int get_enum(const std::string &key) {
-        char henum[256], herr[256];
+        char henum[256]="", herr[256]="";
         int ienum = 0, ierr = 0;
         REQUIRE(key.size() < 254);
         strcpy(henum, (key + std::string(255-key.size(), ' ')).c_str());
@@ -115,6 +115,18 @@ public:
         if (jflag != -999){
             REQUIRE(kflag == jflag);
         }
+    }
+    void SETFLUIDS(const std::string &flds, int &ierr, std::string &herr) {
+        char hFlds[10001] = "";
+        REQUIRE(flds.size() <= 10000);
+        strcpy(hFlds, (flds.c_str() + std::string(10000 - flds.size(), ' ')).c_str());
+        ierr = 0;
+        SETFLUIDSdll(hFlds, ierr, 10000);
+        char herrsetup[255] = "";
+        if (ierr != 0) {
+            ERRMSGdll(ierr, herrsetup, 255);
+        }
+        herr = std::string(herrsetup);
     }
 };
 

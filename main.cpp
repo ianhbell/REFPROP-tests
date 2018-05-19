@@ -204,14 +204,8 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check AGA8 stays on after SETFLUIDS", "[fla
 
     // Set fluids
     {
-        int ierr = 0; char cfld[10001] = "";
-        std::string s = "Methane * Ethane";
-        strcpy(cfld, (s + std::string(10000-s.size(),' ')).c_str());
-        SETFLUIDSdll(cfld, ierr, 10000);
-        char herrsetup[256] = "";
-        if (ierr != 0) {
-            ERRMSGdll(ierr, herrsetup, 255);
-        }
+        int ierr = 0; std::string herrsetup;
+        SETFLUIDS("Methane * Ethane", ierr, herrsetup);
         CAPTURE(herrsetup);
         CHECK(ierr == 0);
     }
@@ -506,14 +500,9 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check NBP for all pure fluids (when possibl
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Check Ttriple for all pure fluids (when possible)", "[flash]"){
     for (auto &fld : get_pure_fluids_list()) {
-        int ierr = 0; char cfld[10000];
-        strcpy(cfld, fld.c_str());
-        SETFLUIDSdll(cfld, ierr, 255);
-        char herrsetup[255] = "";
-        if (ierr != 0) {
-            ERRMSGdll(ierr, herrsetup, 255);
-        }
-        CAPTURE(herrsetup);
+        int ierr = 0; std::string herrs;
+        SETFLUIDS(fld, ierr, herrs);
+        CAPTURE(herrs);
         CHECK(ierr == 0);
 
         double wmm, ttrp, tnbpt, tc, pc, Dc, Zc, acf, dip, Rgas, z[] = { 1.0 };
@@ -540,13 +529,9 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check Ttriple for all pure fluids (when pos
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Check absolute paths are ok", "[setup]") {
     std::string fld = std::string(std::getenv("RPPREFIX")) + "/FLUIDS/ACETYLENE.FLD";
-    int ierr = 0; char cfld[10000];
-    strcpy(cfld, fld.c_str());
-    SETFLUIDSdll(cfld, ierr, 255);
-    char herr[255];
-    if (ierr != 0) {
-        ERRMSGdll(ierr, herr, 255);
-    }
+    
+    int ierr = 0; std::string herr;
+    SETFLUIDS(fld, ierr, herr);
     CAPTURE(herr);
     REQUIRE(ierr == 0);
     double wmol = 0; int i = 1;
@@ -618,7 +603,7 @@ private:
 
 public:
     KTVvalues get_values(int icomp = 1, int jcomp = 2) {
-        char hmodij[3], hfmix[255], hfij[255], hbinp[255], hmxrul[255];
+        char hmodij[3] = "", hfmix[256] = "", hfij[256] = "", hbinp[256] = "", hmxrul[256] = "";
         double fij[6];
         GETKTVdll(icomp, jcomp, hmodij, fij, hfmix, hfij, hbinp, hmxrul, 3, 255, 255, 255, 255);
         std::vector<double> v(fij,fij+6);
@@ -631,14 +616,14 @@ public:
         return o;
     }
     void set_values(const KTVvalues in, int icomp = 1, int jcomp = 2) {
-        char hmodij[4] = "", hfmix[255], hfij[255], hbinp[255], hmxrul[255];
+        char hmodij[4] = "", hfmix[256], hfij[256], hbinp[256], hmxrul[256];
         strcpy(hmodij, in.hmodij.c_str());
         strcpy(hfmix, in.hfmix.c_str());
         strcpy(hfij, in.hfij.c_str());
         strcpy(hbinp, in.hbinp.c_str());
         strcpy(hmxrul, in.hmxrul.c_str());
         double fij[6]; for (auto i = 0; i < in.fij.size(); ++i){ fij[i] = in.fij[i]; }
-        int ierr = 0; char herr[255];
+        int ierr = 0; char herr[256];
         SETKTVdll(icomp, jcomp, hmodij, fij, hfmix, ierr, herr, 3, 255, 255);
         CAPTURE(herr);
         CHECK(ierr == 0);
@@ -650,8 +635,8 @@ public:
     }
     void reset() {
         int icomp = 1, jcomp = 2;
-        char hmodij[4] = "RST", hfmix[255]; double fij[6]; 
-        int ierr = 0; char herr[255];
+        char hmodij[4] = "RST", hfmix[256]; double fij[6]; 
+        int ierr = 0; char herr[256];
         SETKTVdll(icomp, jcomp, hmodij, fij, hfmix, ierr, herr, 3, 255, 255);
         CAPTURE(herr);
         CHECK(ierr == 0);
@@ -690,7 +675,7 @@ public:
             case perturbations::AGA:
             {
                 auto init = get_values();
-                int ierr; char herr[255];
+                int ierr; char herr[256];
                 SETAGAdll(ierr, herr, 255);
                 auto flags = get_values();
                 // Check same as before
@@ -742,15 +727,9 @@ public:
         CHECK(binary_pairs.size() > 0);
 
         for (const std::string & fluids: {"Methane * Ethane", "R1234yf * R134a" }){
-            char cfld[255] = "";
             CAPTURE(fluids);
-            strcpy(cfld, fluids.c_str());
-            int ierr = 0;
-            SETFLUIDSdll(cfld, ierr, 255);
-            char herr[255] = "";
-            if (ierr != 0) {
-                ERRMSGdll(ierr, herr, 255);
-            }
+            int ierr = 0; std::string herr;
+            SETFLUIDS(fluids, ierr, herr);
             CAPTURE(herr);
             // Get the initial state
             auto ktv = get_values();
@@ -775,13 +754,9 @@ public:
 TEST_CASE_METHOD(GETSETKTV, "Get and set B.I.P.", "[BIP]") { payload(); };
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Critical TC1, VC1", "[crit]") {
-    char cfld[255] = "Methane * Ethane";
-    int ierr = 0;
-    SETFLUIDSdll(cfld, ierr, 255);
-    char herr[255];
-    if (ierr != 0) {
-        ERRMSGdll(ierr, herr, 255);
-    }
+    std::string fld = "Methane * Ethane";
+    int ierr = 0; std::string herr;
+    SETFLUIDS(fld, ierr, herr);
     CAPTURE(herr);
 
     double z[20] = { 0.5,0.5 };
@@ -810,9 +785,9 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Reload the DLL 100 times", "[100Reloads]") 
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Torture test calling of DLL", "[Torture]") {
     {
-        char hflag[255] = "Debug", herr[255] = "";
+        char hflag[256] = "Debug", herr[256] = "";
         int jflag = 1, kflag = -1, ierr = 0;
-        FLAGSdll(hflag, jflag, kflag, ierr, herr, 255, 255);
+        FLAGSdll(hflag, jflag, kflag, ierr, herr, 256, 256);
     }
     for (auto &&pair : get_binary_pairs()) {
         for (std::string &&k : { "ETA", "TCX", "CP", "P", "STN", "TC", "PC" }) {
@@ -834,15 +809,9 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Torture test calling of DLL", "[Torture]") 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Check all alphar derivatives", "[alphar]") {
     for (auto &&pair : get_binary_pairs()) {
         // Setup the fluids
-        int ierr = 0;
-        char flds[10000];
         std::string joined = pair.first + ";" + pair.second;
-        strcpy(flds, joined.c_str());
-        SETFLUIDSdll(flds, ierr, 255);
-        char herr[255] = "";
-        if (ierr != 0) {
-            ERRMSGdll(ierr, herr, 255);
-        }
+        int ierr = 0; std::string herr;
+        SETFLUIDS(joined, ierr, herr);
         CAPTURE(herr);
         if (ierr == 101) {
             continue;
@@ -917,15 +886,9 @@ public:
     }
     
     void payload() {
-
         // Setup the fluids
-        int ierr = 0;
-        char flds[10000] = "Water";
-        SETFLUIDSdll(flds, ierr, 255);
-        char herr[255] = "";
-        if (ierr != 0) {
-            ERRMSGdll(ierr, herr, 255);
-        }
+        int ierr = 0; std::string herr;
+        SETFLUIDS("Water", ierr, herr);
         CAPTURE(herr);
         CHECK(ierr == 0);
         lowT();
@@ -1002,38 +965,27 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "CheckZEZEstimated", "[setup]") {
 };
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Check that R1234ze is an invalid fluid name", "[setup]") {
-    char cfld[255] = "R1234ze";
-    int ierr = 0;
-    SETFLUIDSdll(cfld, ierr, 255);
-    char herr[255];
-    if (ierr != 0) {
-        ERRMSGdll(ierr, herr, 255);
-    }
+    int ierr = 0; std::string herr;
+    SETFLUIDS("R1234ze", ierr, herr);
     CAPTURE(herr);
     CHECK(ierr == 851);
 };
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Check that all fluids load properly", "[setup]") {
     for (auto &fld : get_pure_fluids_list()) {
-        int ierr = 0; char cfld[10000];
-        strcpy(cfld, fld.c_str());
         CAPTURE(fld);
-        SETFLUIDSdll(cfld, ierr, 255);
-        char herr[255];
-        if (ierr != 0) {
-            ERRMSGdll(ierr, herr, 255);
-        }
+        int ierr = 0; std::string herr;
+        SETFLUIDS(fld, ierr, herr);
         CAPTURE(herr);
         CHECK(ierr == 0);
     }
 };
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Check that REDX works properly", "[REDX]") {
-    int ierr = 0;
-    char fld[10000] = "Methane * Nitrogen";
-    SETFLUIDSdll(fld, ierr, 255);
-    CHECK(ierr == 0);
     double x[] = { 0.5,0.5 }, Tr = 1e20, Dr = 1e20;
+    int ierr = 0; std::string herr;
+    SETFLUIDS("Methane * Nitrogen", ierr, herr);
+    CHECK(ierr == 0);
     REDXdll(x, Tr, Dr);
     CAPTURE(Tr);
     CAPTURE(Dr);
@@ -1065,20 +1017,15 @@ public:
     void payload() {
         for (auto &&pt : points){
             std::string fld = pt.name;
-            int ierr = 0; char cfld[10000];
-            strcpy(cfld, fld.c_str());
-            SETFLUIDSdll(cfld, ierr, 255);
-            char herrsetup[255] = "";
-            if (ierr != 0) {
-                ERRMSGdll(ierr, herrsetup, 255);
-            }
+            int ierr = 0; std::string herrsetup;
+            SETFLUIDS(fld, ierr, herrsetup);
             CAPTURE(herrsetup);
             REQUIRE(ierr == 0);
 
             double x[1] = {1.0};
             double p_kPa;
-            char herr[255];
-            SUBLTdll(pt.T_K, x, p_kPa, ierr,herr,255);
+            char herr[256];
+            SUBLTdll(pt.T_K, x, p_kPa, ierr,herr,256);
             double p_Pa = p_kPa*1000;
             CAPTURE(fld);
             CAPTURE(herr);

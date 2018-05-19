@@ -242,14 +242,9 @@ public:
         for (auto& data : validation_data) {
 
             {
-                int ierr = 0; char cfld[10001];
-                strcpy(cfld, (joined + std::string(10000-joined.size(), ' ')).c_str());
-                SETFLUIDSdll(cfld, ierr, 10000);
-                char herrsetup[256] = "";
-                if (ierr != 0) {
-                    ERRMSGdll(ierr, herrsetup, 255);
-                }
-                CAPTURE(herrsetup);
+                int ierr = 0; std::string herr;
+                SETFLUIDS(joined, ierr, herr);
+                CAPTURE(herr);
                 CHECK(ierr == 0);
             }
             set_flag();
