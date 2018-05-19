@@ -244,8 +244,8 @@ public:
             {
                 int ierr = 0; char cfld[10001];
                 strcpy(cfld, (joined + std::string(10000-joined.size(), ' ')).c_str());
-                SETFLUIDSdll(cfld, ierr, 255);
-                char herrsetup[255] = "";
+                SETFLUIDSdll(cfld, ierr, 10000);
+                char herrsetup[256] = "";
                 if (ierr != 0) {
                     ERRMSGdll(ierr, herrsetup, 255);
                 }
