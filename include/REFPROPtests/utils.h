@@ -109,6 +109,11 @@ static predef_mix_values get_predef_mix_values(const std::string &fname) {
     return predef_mix_values{vals[0], vals[1], vals[2], vals[3], molar_compositions};
 }
 
+static std::string normalize_path(const std::string &path_as_string) {
+    namespace fs = boost::filesystem;
+    return boost::filesystem::canonical(fs::path(path_as_string)).string();
+}
+
 static std::vector<std::string> get_files_in_folder(const std::string &folder, const std::string &extension) {
     char* RPPREFIX = std::getenv("RPPREFIX");
     REQUIRE(strlen(RPPREFIX) != 0);

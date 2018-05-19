@@ -559,6 +559,8 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check full absolute paths are ok", "[setup]
         CAPTURE(r.herr);
         std::string str = std::string(r.herr);
         boost::algorithm::trim(str);
+        str = normalize_path(str);
+        fld0 = normalize_path(fld0);
         CHECK(str == fld0);
         CHECK(r.ierr == -999);
     }
