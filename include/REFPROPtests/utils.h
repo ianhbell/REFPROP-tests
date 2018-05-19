@@ -70,7 +70,7 @@ double string_to_double(const std::string &s){
     if (ss.rdbuf()->in_avail() != 0) {
         throw "fraction [%s] was not converted fully" + s;
     }
-    return f;
+	return f;
 }
 
 struct predef_mix_values {
@@ -90,10 +90,10 @@ static predef_mix_values get_predef_mix_values(const std::string &fname) {
     auto val_string = str_split(lines[1], " ");
     std::vector<double> vals;
     for (auto &c : val_string) {
-        std::string cc = c;
+		std::string cc = c;
         boost::algorithm::trim(cc); // inplace
         if (!cc.empty()){
-            vals.emplace_back(string_to_double(cc));
+			vals.emplace_back(string_to_double(cc));
         }
     }
     if (vals.size() != 4) {
