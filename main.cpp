@@ -204,7 +204,9 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check AGA8 stays on after SETFLUIDS", "[fla
 
     // Set fluids
     {
-        int ierr = 0; char cfld[10001] = "Methane * Ethane";
+        int ierr = 0; char cfld[10001] = "";
+        std::string s = "Methane * Ethane";
+        strcpy(cfld, (s + std::string(10000-s.size(),' ')).c_str());
         SETFLUIDSdll(cfld, ierr, 10000);
         char herrsetup[256] = "";
         if (ierr != 0) {
