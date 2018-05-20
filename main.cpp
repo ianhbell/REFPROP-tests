@@ -846,6 +846,23 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Ancillary curves for D2O of Herrig", "[D2O]
     }
 };
 
+TEST_CASE_METHOD(REFPROPDLLFixture, "Check hUnits are the same several ways", "[hUnits]") {
+    std::vector<double> z = { 1.0 };
+    auto r = REFPROP("PROPANE", " ", "TC", 0, 0, 0, 0, 0, z);
+    auto r2 = REFPROP("PROPANE", " ", "TC;PC", 0, 0, 0, 0, 0, z);
+    auto r3 = REFPROP("PROPANE", "TQ", "TC;PC", 0, 0, 0, 200, 0, z);
+    auto r4 = REFPROP("PROPANE", "CRIT", "T", 0, 0, 0, 0, 0, z);
+    boost::algorithm::trim(r.hUnits); //inplace
+    boost::algorithm::trim(r2.hUnits); //inplace
+    boost::algorithm::trim(r3.hUnits); //inplace
+    boost::algorithm::trim(r4.hUnits); //inplace
+    CAPTURE(r.herr);
+    CHECK(r.ierr == 0);
+    CHECK(r.hUnits == r2.hUnits);
+    CHECK(r.hUnits == r3.hUnits);
+    CHECK(r.hUnits == r4.hUnits);
+};
+
 TEST_CASE_METHOD(REFPROPDLLFixture, "CAS# for PROPANE", "[CAS]") { 
     std::vector<double> z = {1.0};
     auto r = REFPROP("PROPANE", " ", "CAS#", 0,0,0,0,0,z);
