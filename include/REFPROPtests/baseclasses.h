@@ -5,6 +5,7 @@
 
 #include "manyso/native.h"
 #include "manyso/exceptions.h"
+#include "REFPROPtests/utils.h"
 
 #include <string>
 #include <cstring>
@@ -42,7 +43,7 @@ public:
         std::string shared_library_filename = "librefprop.so";
 #endif
 
-        std::string shared_library_path = std::string(RPPREFIX) + shared_library_filename;
+        std::string shared_library_path = path_join_and_norm(std::string(RPPREFIX), shared_library_filename);
         CAPTURE(shared_library_path);
 
 #if defined(__MANYSOISWINDOWS__)

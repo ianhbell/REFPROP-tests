@@ -7,8 +7,9 @@
 #include <locale>
 #include <regex>
 #include <string>
+#include <sstream>
 
-inline std::string get_file_contents(const std::string &filename) {
+static inline std::string get_file_contents(const std::string &filename) {
     using std::ios;
     std::ifstream ifs(filename.c_str(), ios::in | ios::binary);
     if (!ifs) {
@@ -54,7 +55,7 @@ static std::vector<std::pair<std::string, std::string>> get_binary_pairs() {
 }
 
 /// From CoolProp
-double string_to_double(const std::string &s){
+static double string_to_double(const std::string &s){
     std::stringstream ss(s);
     char c = '.';
 
@@ -112,6 +113,11 @@ static predef_mix_values get_predef_mix_values(const std::string &fname) {
 static std::string normalize_path(const std::string &path_as_string) {
     namespace fs = boost::filesystem;
     return boost::filesystem::canonical(fs::path(path_as_string)).string();
+}
+
+static std::string path_join_and_norm(const std::string &left, const std::string &right){
+    namespace fs = boost::filesystem;
+    return normalize_path((fs::path(left) / fs::path("/") / fs::path(right)).string());
 }
 
 static std::vector<std::string> get_files_in_folder(const std::string &folder, const std::string &extension) {
