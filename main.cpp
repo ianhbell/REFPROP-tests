@@ -899,12 +899,14 @@ public:
     };
     void set_all(const std::string &key) {
         for (const auto &fluid: get_pure_fluids_list()){
-            int ierrsetup = 0; std::string herrsetup;
-            SETFLUIDS(fluid, ierrsetup, herrsetup);
+            
             for (const auto & mod : model_options[key]) {
                 int ierr = 0; std::string herr;
                 std::tie(ierr, herr) = SETMOD(1, key, "HMX", mod);
                 CHECK(ierr == 0);
+                int ierrsetup = 0; std::string herrsetup;
+                SETFLUIDS(fluid, ierrsetup, herrsetup);
+                CHECK(ierrsetup == 0);
             }
         }
     }
