@@ -872,6 +872,15 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "CAS# for PROPANE", "[CAS]") {
     CHECK(r.hUnits == "74-98-6");
 };
 
+TEST_CASE_METHOD(REFPROPDLLFixture, "Check InChI for D6", "[InChI]") {
+    std::vector<double> z = { 1.0 };
+    auto r = REFPROP("D6","","INCHI",0,0,0,0,0,z);
+    CAPTURE(r.herr);
+    CHECK(r.ierr == 0);
+    boost::algorithm::trim(r.hUnits); //inplace
+    CHECK(r.hUnits == "InChI=1S/C12H36O6Si6/c1-19(2)13-20(3,4)15-22(7,8)17-24(11,12)18-23(9,10)16-21(5,6)14-19/h1-12H3");
+};
+
 TEST_CASE_METHOD(REFPROPDLLFixture, "Reload the DLL 100 times", "[100Reloads]") {
     for (auto i =0; i < 100; ++i){ 
         reload(); 
