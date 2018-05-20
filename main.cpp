@@ -1,4 +1,4 @@
-#include <cstdlib>
+ï»¿#include <cstdlib>
 #include <boost/algorithm/string/trim.hpp>
 
 #define CATCH_CONFIG_MAIN
@@ -404,7 +404,7 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check fluid files with dash in them", "[fil
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Check fluid files with unicode in them", "[file_loading],[setup]") {
     int ierr = 1, nc = 1;
-    char herr[255], hfld[] = "été.FLD", hhmx[] = "HMX.BNC", href[] = "DEF";
+    char herr[255], hfld[] = "Ã©tÃ©.FLD", hhmx[] = "HMX.BNC", href[] = "DEF";
     char nopath[255] = "";
     SETPATHdll(nopath, 255);
     SETUPdll(nc, hfld, hhmx, href, ierr, herr, 10000, 255, 3, 255);
