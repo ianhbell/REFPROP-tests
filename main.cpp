@@ -899,8 +899,10 @@ public:
     };
     void set_all(const std::string &key) {
         for (const auto &fluid: get_pure_fluids_list()){
+            int ierrsetup = 0; std::string herrsetup;
+            SETFLUIDS(fluid, ierrsetup, herrsetup);
             for (const auto & mod : model_options[key]) {
-                int ierr; std::string herr;
+                int ierr = 0; std::string herr;
                 std::tie(ierr, herr) = SETMOD(1, key, "HMX", mod);
                 CHECK(ierr == 0);
             }
@@ -913,6 +915,11 @@ TEST_CASE_METHOD(ModelSettingFixture, "Test setting of every possible ETA model 
 TEST_CASE_METHOD(ModelSettingFixture, "Test setting of every possible TCX model for all fluids", "[SETMOD],[TCX]") { set_all("TCX"); }
 TEST_CASE_METHOD(ModelSettingFixture, "Test setting of every possible MLT model for all fluids", "[SETMOD],[MLT]") { set_all("MLT"); }
 TEST_CASE_METHOD(ModelSettingFixture, "Test setting of every possible SBL model for all fluids", "[SETMOD],[SBL]") { set_all("SBL"); }
+TEST_CASE_METHOD(ModelSettingFixture, "SETMOD without SETUP should be failure", "[SETMOD]") { 
+    int ierr; std::string herr;
+    std::tie(ierr, herr) = SETMOD(1, "ETA", "HMX", "VS1");
+    CHECK(ierr != 0);
+}
 
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Torture test calling of DLL", "[Torture]") {
