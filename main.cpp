@@ -404,7 +404,7 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check fluid files with dash in them", "[fil
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Check fluid files with unicode in them", "[file_loading],[setup]") {
     int ierr = 1, nc = 1;
-    char herr[255], hfld[] = "ï¿½tï¿½.FLD", hhmx[] = "HMX.BNC", href[] = "DEF";
+    char herr[255], hfld[] = "été.FLD", hhmx[] = "HMX.BNC", href[] = "DEF";
     char nopath[255] = "";
     SETPATHdll(nopath, 255);
     SETUPdll(nc, hfld, hhmx, href, ierr, herr, 10000, 255, 3, 255);
@@ -648,14 +648,14 @@ public:
         return o;
     }
     void set_values(const KTVvalues in, int icomp = 1, int jcomp = 2) {
-        char hmodij[4] = "", hfmix[256], hfij[256], hbinp[256], hmxrul[256];
+        char hmodij[4] = "", hfmix[256] = "", hfij[256] = "", hbinp[256] = "", hmxrul[256] = "";
         strcpy(hmodij, in.hmodij.c_str());
         strcpy(hfmix, in.hfmix.c_str());
         strcpy(hfij, in.hfij.c_str());
         strcpy(hbinp, in.hbinp.c_str());
         strcpy(hmxrul, in.hmxrul.c_str());
         double fij[6]; for (auto i = 0; i < in.fij.size(); ++i){ fij[i] = in.fij[i]; }
-        int ierr = 0; char herr[256];
+        int ierr = 0; char herr[256] = "";
         SETKTVdll(icomp, jcomp, hmodij, fij, hfmix, ierr, herr, 3, 255, 255);
         CAPTURE(herr);
         CHECK(ierr == 0);
@@ -667,8 +667,8 @@ public:
     }
     void reset() {
         int icomp = 1, jcomp = 2;
-        char hmodij[4] = "RST", hfmix[256]; double fij[6]; 
-        int ierr = 0; char herr[256];
+        char hmodij[4] = "RST", hfmix[256] = ""; double fij[6]; 
+        int ierr = 0; char herr[256] = "";
         SETKTVdll(icomp, jcomp, hmodij, fij, hfmix, ierr, herr, 3, 255, 255);
         CAPTURE(herr);
         CHECK(ierr == 0);
@@ -800,7 +800,7 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Critical TC1, VC1", "[crit]") {
     CHECK(ierr <= 0); 
 };
 
-TEST_CASE_METHOD(REFPROPDLLFixture, "Ancillary curves for D2O of Herrig", "[D2O]") {
+TEST_CASE_METHOD(REFPROPDLLFixture, "Ancillary curves for D2O of Herrig", "[D2O],[ancillary]") {
     std::vector<double> z(20,1.0);
     
     // Invalid!
