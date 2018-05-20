@@ -36,6 +36,8 @@ subprocess.run('for f in log_*.txt; do echo $f && tail -n 1 $f; done', shell=Tru
 
 # Running gcov
 
+Thanks to: the [gcov-fortran-example](https://github.com/sebastianbeyer/gcov-fortran-example) repo of [sebastianbeyer](https://github.com/sebastianbeyer)
+
 On linux-based OS (probably OSX too), ``gcov`` can be used to get a report of the code coverage of the tests.  Combined with the tests in this repository, comprehensive tests can be written that exercise the full code of REFPROP.  To enable:
 
 1. Build the shared library with [REFPROP-cmake](https://github.com/usnistgov/REFPROP-cmake) with GCOV support.  A call like this should do it:
