@@ -5,7 +5,7 @@ In order to look for uninitialized variables caused by the use of an implicitly 
 
 Note: Make sure you build REFPROP with debug symbols
 
-```
+``` python
 import subprocess, os
 
 # Find all the tags by asking the exe for all the tags that it knows about
@@ -50,4 +50,4 @@ lcov --gcov-tool `which gcov` --capture --directory . --output-file coverage.inf
 zip -r 
 ```
 
-Open the index.html that was generated in the ``html`` folder to check out the code coverage
+2. Open the index.html that was generated in the ``html`` folder to check out the code coverage
