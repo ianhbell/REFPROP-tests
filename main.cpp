@@ -472,7 +472,7 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check ancillaries for pure fluids", "[flash
                 double err_perc = std::abs(rv.Output[i]/ ra.Output[i]-1)*100;
                 CAPTURE(err_perc);
                 CAPTURE(name);
-                CHECK(ra.Output[i] == Approx(rv.Output[i]).epsilon(0.001));
+                CHECK(ra.Output[i] == Approx(rv.Output[i]).epsilon(0.003));
             }
         }
     }
