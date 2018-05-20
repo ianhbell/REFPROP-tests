@@ -44,6 +44,7 @@ On linux-based OS (probably OSX too), ``gcov`` can be used to get a report of th
 (from root of REFPROP-cmake repo)
 mkdir build && cd build
 cmake .. -DREFPROP_GCOV=ON -DREFPROP_FORTRAN_PATH=/path/to/REFPROP/FORTRAN -DCMAKE_BUILD_TYPE=Debug
+cmake --build .
 ```
 
 2. Run the exe and use gcov to generate the HTML documentation; zip it all up
