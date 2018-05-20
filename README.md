@@ -1,9 +1,9 @@
 
 # Running valgrind tests
 
-In order to look for uninitialized variables caused by the use of an implicitly defined variable that is subsequently used, the ``memcheck`` program from the ``valgrind`` suite can be used.  Here is a snippet that runs each tag that can be found in the Catch exe, one at a time, in order to try to identify the presence of any memory-related bug. 
+In order to look for uninitialized variables caused by the use of an implicitly defined variable that is subsequently used, the ``memcheck`` program from the ``valgrind`` suite can be used.  Here is a snippet that runs each tag that can be found in the Catch exe, one at a time, in order to try to identify the presence of any memory-related bugs. 
 
-Note: Make sure you build REFPROP with debug symbols
+Note: Make sure you build REFPROP with debug symbols.  A ``RelWithDebInfo`` CMake build target also works perfectly.
 
 ``` python
 import subprocess, os
@@ -44,10 +44,15 @@ On linux-based OS (probably OSX too), ``gcov`` can be used to get a report of th
 (from root of REFPROP-cmake repo)
 mkdir build && cd build
 cmake .. -DREFPROP_GCOV=ON -DREFPROP_FORTRAN_PATH=/path/to/REFPROP/FORTRAN -DCMAKE_BUILD_TYPE=Debug
+```
+
+2. Run the exe and use gcov to generate the HTML documentation; zip it all up
+```
+(from build folder of REFPROP-cmake)
 RPPREFIX=`pwd` /path/to/test/exe 
 gcov CMakeFiles/refprop.dir/media/R/FORTRAN/*.gcno   (path will need to be updated)
 lcov --gcov-tool `which gcov` --capture --directory . --output-file coverage.info && genhtml --output-directory html coverage.info
-zip -r 
+zip -r html.zip html
 ```
 
-2. Open the index.html that was generated in the ``html`` folder to check out the code coverage
+3. Open the index.html that was generated in the ``html`` folder to check out the code coverage
