@@ -635,12 +635,20 @@ private:
 
 public:
     KTVvalues get_values(int icomp = 1, int jcomp = 2) {
-        char hmodij[3] = "", hfmix[256] = "", hfij[256] = "", hbinp[256] = "", hmxrul[256] = "";
-        double fij[6];
+        char hmodij[4] = "", hfmix[256] = "", hfij[256] = "", hbinp[256] = "", hmxrul[256] = "";
+        std::vector<double> fij(6, 0.0);
         memset(hmodij, ' ',3); memset(hfmix, ' ', 255); memset(hfij, ' ', 255); memset(hbinp, ' ', 255); memset(hmxrul, ' ', 255);
-        GETKTVdll(icomp, jcomp, hmodij, fij, hfmix, hfij, hbinp, hmxrul, 3, 255, 255, 255, 255);
-        std::vector<double> v(fij,fij+6);
-        KTVvalues o{std::string(hmodij,3), v, std::string(hfmix,255), std::string(hfij,255), std::string(hbinp,255), std::string(hmxrul,255)};
+        std::cout << strlen(hmodij) << std::endl;
+        int ii = icomp, jj = jcomp;
+        GETKTVdll(ii, jj, hmodij, &(fij[0]), hfmix, hfij, hbinp, hmxrul, 3, 255, 255, 255, 255);
+        KTVvalues o;
+        std::cout << "hmodij:" << hmodij << "|" << std::endl;
+        std::cout << "hfmix:" << hfmix << "|" << std::endl;
+        std::cout << "hfij:" << hfij << "|" << std::endl;
+        std::cout << "hbinp:" << hbinp << "|" << std::endl;
+        std::cout << "hmxrul:" << hmxrul << "|" << std::endl;
+        
+        o.hmodij = std::string(hmodij,3); o.fij=fij; o.hfmix = std::string(hfmix,254); o.hfij = std::string(hfij,254); o.hbinp = std::string(hbinp,254); o.hmxrul = std::string(hmxrul,254);
         boost::algorithm::trim(o.hmodij); //inplace
         boost::algorithm::trim(o.hfmix); //inplace
         boost::algorithm::trim(o.hfij); //inplace
@@ -650,13 +658,14 @@ public:
     }
     void set_values(const KTVvalues in, int icomp = 1, int jcomp = 2) {
         char hmodij[4] = "", hfmix[256] = "", hfij[256] = "", hbinp[256] = "", hmxrul[256] = "";
-        strcpy(hmodij, (in.hmodij + std::string(3-in.hmodij.size(), ' ')).c_str());
-        strcpy(hfmix, (in.hfmix + std::string(255 - in.hmodij.size(), ' ')).c_str());
-        strcpy(hfij, (in.hfij + std::string(255 - in.hmodij.size(), ' ')).c_str());
-        strcpy(hbinp, (in.hbinp + std::string(255 - in.hmodij.size(), ' ')).c_str());
-        strcpy(hmxrul, (in.hmxrul + std::string(255 - in.hmodij.size(), ' ')).c_str());
+        memset(hmodij, ' ', 3); memset(hfmix, ' ', 255); memset(hfij, ' ', 255); memset(hbinp, ' ', 255); memset(hmxrul, ' ', 255);
+        strcpy(hmodij, in.hmodij.c_str());
+        strcpy(hfmix, in.hfmix.c_str());
+        strcpy(hfij, in.hfij.c_str());
+        strcpy(hbinp, in.hbinp.c_str());
+        strcpy(hmxrul, in.hmxrul.c_str());
         double fij[6]; for (auto i = 0; i < in.fij.size(); ++i){ fij[i] = in.fij[i]; }
-        int ierr = 0; char herr[256] = "";
+        int ierr = 0; char herr[256] = ""; memset(hfij, ' ', 255);
         SETKTVdll(icomp, jcomp, hmodij, fij, hfmix, ierr, herr, 3, 255, 255);
         CAPTURE(herr);
         CHECK(ierr == 0);
@@ -668,8 +677,8 @@ public:
     }
     void reset() {
         int icomp = 1, jcomp = 2;
-        char hmodij[4] = "RST", hfmix[256] = ""; double fij[6]; 
-        int ierr = 0; char herr[256] = ""; memset(herr, ' ', 255);
+        char hmodij[4] = "RST", hfmix[256] = ""; double fij[6] = {0,0,0,0,0,0}; 
+        int ierr = 0; char herr[256] = ""; memset(herr, '\0', 255); memset(hfmix, '\0', 255);
         SETKTVdll(icomp, jcomp, hmodij, fij, hfmix, ierr, herr, 3, 255, 255);
         CAPTURE(herr);
         CHECK(ierr == 0);
@@ -685,8 +694,7 @@ public:
                 PREOSdll(prflag);
                 auto pr_init = get_values();
                 // Check PR is on
-                CHECK(pr_init.hmodij ==
-                    std::string("PR"));
+                CHECK(pr_init.hmodij == std::string("PR"));
                 // Jiggle kij parameter
                 auto jig = jiggle(pr_init);
                 set_values(jig);
@@ -704,17 +712,19 @@ public:
                 // Reset the parameters
                 reset();
                 CHECK(are_same(get_values(), init));
+                break;
             }
             case perturbations::AGA:
             {
                 auto init = get_values();
-                int ierr; char herr[256];
+                int ierr; char herr[256] = "";
                 SETAGAdll(ierr, herr, 255);
                 auto flags = get_values();
                 // Check same as before
                 CHECK(are_same(init, flags));
                 // Turn off AGA
                 UNSETAGAdll();
+                break;
             }
             case perturbations::jiggle_then_reset:
             {
@@ -728,6 +738,7 @@ public:
                 reset();
                 // Check same as beginning
                 CHECK(are_same(init, get_values()));
+                break;
             }
             case perturbations::set_back:
             {
@@ -740,6 +751,7 @@ public:
                 reset();
                 // Check same as beginning
                 CHECK(are_same(init, get_values()));
+                break;
             }
         }
     }
@@ -764,15 +776,16 @@ public:
             int ierr = 0; std::string herr;
             SETFLUIDS(fluids, ierr, herr);
             CAPTURE(herr);
+            CHECK(ierr);
             // Get the initial state
             auto ktv = get_values();
 
             // Run each step, checking the output each time
             std::vector<perturbations> steps = {
-                perturbations::AGA, 
+                //perturbations::AGA, 
                 perturbations::peng_robinson, 
-                perturbations::peng_robinson,
-                perturbations::set_back
+                //perturbations::peng_robinson,
+                //perturbations::set_back
             };
             for (auto &step : steps) {
                 do_action(step);
