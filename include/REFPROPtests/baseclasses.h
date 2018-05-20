@@ -129,6 +129,19 @@ public:
         }
         herr = std::string(herrsetup);
     }
+    std::pair<int, std::string> SETMOD(int Ncomp, const std::string &type, const std::string &mix, const std::string &model) {
+        char htype[4] = "", hmix[4] = "", hmodel[4] = "";
+        REQUIRE(type.size() == 3);
+        REQUIRE(mix.size() == 3);
+        REQUIRE(model.size() == 3);
+        strcpy(htype, type.c_str());
+        strcpy(hmix, mix.c_str());
+        strcpy(hmodel, model.c_str());
+
+        int ierr = 0; char herr[256] = ""; memset(herr,' ',255);
+        SETMODdll(Ncomp, htype, hmix, hmodel, ierr, herr, 3, 3, 3, 255);
+        return std::make_pair(ierr, std::string(herr));
+    }
 };
 
 #endif
