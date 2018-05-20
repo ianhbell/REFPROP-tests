@@ -892,7 +892,7 @@ public:
     std::map<std::string, std::vector<std::string>> model_options = {
         {"EOS",{"BWR","ECS","FE1","FE2","FE3","FE4","FEK","FEQ","FES"}},
         {"ETA",{"ECS","VS0","VS1","VS2","VS3","VS3","VS4","VS5","VS6","VS7","ECS","TRN"}},
-        {"TCX",{"TC0","TC1","TC2","TC3","TC5","TC7","ECS","TRN"}},
+        {"TCX",{"TK0","TK1","TK2","TK3","TK4","TK5","TK6","TK7","ECS","TRN"}},
         {"MLT",{"ML1","ML2","MLH","MLP","MLW" }},
         {"SBL",{"SB1","SB2","SB3"}},
         {"DEC",{"DE2","DE3","DE4","DE5"}}
