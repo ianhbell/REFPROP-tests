@@ -637,9 +637,10 @@ public:
     KTVvalues get_values(int icomp = 1, int jcomp = 2) {
         char hmodij[3] = "", hfmix[256] = "", hfij[256] = "", hbinp[256] = "", hmxrul[256] = "";
         double fij[6];
+        memset(hmodij, ' ',3); memset(hfmix, ' ', 255); memset(hfij, ' ', 255); memset(hbinp, ' ', 255); memset(hmxrul, ' ', 255);
         GETKTVdll(icomp, jcomp, hmodij, fij, hfmix, hfij, hbinp, hmxrul, 3, 255, 255, 255, 255);
         std::vector<double> v(fij,fij+6);
-        KTVvalues o{std::string(hmodij,3), v, std::string(hfmix,254), std::string(hfij,254), std::string(hbinp,254), std::string(hmxrul,254)};
+        KTVvalues o{std::string(hmodij,3), v, std::string(hfmix,255), std::string(hfij,255), std::string(hbinp,255), std::string(hmxrul,255)};
         boost::algorithm::trim(o.hmodij); //inplace
         boost::algorithm::trim(o.hfmix); //inplace
         boost::algorithm::trim(o.hfij); //inplace
@@ -649,11 +650,11 @@ public:
     }
     void set_values(const KTVvalues in, int icomp = 1, int jcomp = 2) {
         char hmodij[4] = "", hfmix[256] = "", hfij[256] = "", hbinp[256] = "", hmxrul[256] = "";
-        strcpy(hmodij, in.hmodij.c_str());
-        strcpy(hfmix, in.hfmix.c_str());
-        strcpy(hfij, in.hfij.c_str());
-        strcpy(hbinp, in.hbinp.c_str());
-        strcpy(hmxrul, in.hmxrul.c_str());
+        strcpy(hmodij, (in.hmodij + std::string(3-in.hmodij.size(), ' ')).c_str());
+        strcpy(hfmix, (in.hfmix + std::string(255 - in.hmodij.size(), ' ')).c_str());
+        strcpy(hfij, (in.hfij + std::string(255 - in.hmodij.size(), ' ')).c_str());
+        strcpy(hbinp, (in.hbinp + std::string(255 - in.hmodij.size(), ' ')).c_str());
+        strcpy(hmxrul, (in.hmxrul + std::string(255 - in.hmodij.size(), ' ')).c_str());
         double fij[6]; for (auto i = 0; i < in.fij.size(); ++i){ fij[i] = in.fij[i]; }
         int ierr = 0; char herr[256] = "";
         SETKTVdll(icomp, jcomp, hmodij, fij, hfmix, ierr, herr, 3, 255, 255);
@@ -668,7 +669,7 @@ public:
     void reset() {
         int icomp = 1, jcomp = 2;
         char hmodij[4] = "RST", hfmix[256] = ""; double fij[6]; 
-        int ierr = 0; char herr[256] = "";
+        int ierr = 0; char herr[256] = ""; memset(herr, ' ', 255);
         SETKTVdll(icomp, jcomp, hmodij, fij, hfmix, ierr, herr, 3, 255, 255);
         CAPTURE(herr);
         CHECK(ierr == 0);
