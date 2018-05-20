@@ -887,6 +887,34 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Reload the DLL 100 times", "[100Reloads]") 
     }
 };
 
+class ModelSettingFixture: public REFPROPDLLFixture{
+public:
+    std::map<std::string, std::vector<std::string>> model_options = {
+        {"EOS",{"BWR","ECS","FE1","FE2","FE3","FE4","FEK","FEQ","FES"}},
+        {"ETA",{"ECS","VS0","VS1","VS2","VS3","VS3","VS4","VS5","VS6","VS7","ECS","TRN"}},
+        {"TXC",{"TC0","TC1","TC2","TC3","TC5","TC7","ECS","TRN"}},
+        {"MLT",{"ML1","ML2","MLH","MLP","MLW" }},
+        {"SBL",{"SB1","SB2","SB3"}},
+        {"DEC",{"DE2","DE3","DE4","DE5"}}
+    };
+    void set_all(const std::string &key) {
+        for (const auto &fluid: get_pure_fluids_list()){
+            for (const auto & mod : model_options[key]) {
+                int ierr; std::string herr;
+                std::tie(ierr, herr) = SETMOD(1, key, "HMX", mod);
+                CHECK(ierr == 0);
+            }
+        }
+    }
+};
+
+TEST_CASE_METHOD(ModelSettingFixture, "Test setting of every possible EOS model for all fluids", "[SETMOD],[EOS]") { set_all("EOS"); }
+TEST_CASE_METHOD(ModelSettingFixture, "Test setting of every possible ETA model for all fluids", "[SETMOD],[ETA]") { set_all("ETA"); }
+TEST_CASE_METHOD(ModelSettingFixture, "Test setting of every possible TCX model for all fluids", "[SETMOD],[TCX]") { set_all("TCX"); }
+TEST_CASE_METHOD(ModelSettingFixture, "Test setting of every possible MLT model for all fluids", "[SETMOD],[MLT]") { set_all("MLT"); }
+TEST_CASE_METHOD(ModelSettingFixture, "Test setting of every possible SBL model for all fluids", "[SETMOD],[SBL]") { set_all("SBL"); }
+
+
 TEST_CASE_METHOD(REFPROPDLLFixture, "Torture test calling of DLL", "[Torture]") {
     {
         char hflag[256] = "Debug", herr[256] = "";
