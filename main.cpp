@@ -892,21 +892,49 @@ public:
     std::map<std::string, std::vector<std::string>> model_options = {
         {"EOS",{"BWR","ECS","FE1","FE2","FE3","FE4","FEK","FEQ","FES"}},
         {"ETA",{"ECS","VS0","VS1","VS2","VS3","VS3","VS4","VS5","VS6","VS7","ECS","TRN"}},
-        {"TXC",{"TC0","TC1","TC2","TC3","TC5","TC7","ECS","TRN"}},
+        {"TCX",{"TC0","TC1","TC2","TC3","TC5","TC7","ECS","TRN"}},
         {"MLT",{"ML1","ML2","MLH","MLP","MLW" }},
         {"SBL",{"SB1","SB2","SB3"}},
         {"DEC",{"DE2","DE3","DE4","DE5"}}
     };
+    
     void set_all(const std::string &key) {
         for (const auto &fluid: get_pure_fluids_list()){
-            
             for (const auto & mod : model_options[key]) {
+                CAPTURE(fluid);
+                CAPTURE(mod);
+                // Request the model, the next call to SETFLUIDS will turn it on
                 int ierr = 0; std::string herr;
                 std::tie(ierr, herr) = SETMOD(1, key, "HMX", mod);
-                CHECK(ierr == 0);
+                CAPTURE(herr);
+                CHECK(ierr == -912); // Should be a warning that the model is not yet enabled
+                // Turn it on by setting up the fluids
                 int ierrsetup = 0; std::string herrsetup;
                 SETFLUIDS(fluid, ierrsetup, herrsetup);
-                CHECK(ierrsetup == 0);
+                CAPTURE(ierrsetup);
+                // Either ierrsetup is 0 (success), or 
+                if (ierrsetup == 105){ 
+                    WARN("Could not load EOS model "+mod+" for" + fluid);
+                    continue;
+                }
+                // If the model has been initialized without error, do a calculation
+                // with it
+                if (key == "ETA" || key == "TCX" || key == "EOS") {
+                    std::vector<double> z(20,1);
+                    auto r = REFPROP(fluid,"","TC;DC",0,0,0,0,0,z);
+                    double Tc = r.Output[0], Dc = r.Output[1];
+                    auto r2 = REFPROP(fluid, "TD&", (key != "EOS") ? key : "D",0,0,0,1.1*Tc,1.1*Dc,z);
+                    CAPTURE(r2.herr);
+                    CHECK(r2.ierr < 100);
+                }
+                else if (key == "MLT"){
+                    std::vector<double> z(20, 1);
+                    auto r = REFPROP(fluid, "", "PTRP", 0, 0, 0, 0, 0, z);
+                    double ptrip = r.Output[0];
+                    auto r2 = REFPROP(fluid, "PMELT", "T", 0, 0, 0, 1.5*ptrip, 0, z);
+                    CAPTURE(r2.herr);
+                    CHECK(r2.ierr < 100);
+                }
             }
         }
     }
@@ -916,8 +944,8 @@ TEST_CASE_METHOD(ModelSettingFixture, "Test setting of every possible EOS model 
 TEST_CASE_METHOD(ModelSettingFixture, "Test setting of every possible ETA model for all fluids", "[SETMOD],[ETA]") { set_all("ETA"); }
 TEST_CASE_METHOD(ModelSettingFixture, "Test setting of every possible TCX model for all fluids", "[SETMOD],[TCX]") { set_all("TCX"); }
 TEST_CASE_METHOD(ModelSettingFixture, "Test setting of every possible MLT model for all fluids", "[SETMOD],[MLT]") { set_all("MLT"); }
-TEST_CASE_METHOD(ModelSettingFixture, "Test setting of every possible SBL model for all fluids", "[SETMOD],[SBL]") { set_all("SBL"); }
-TEST_CASE_METHOD(ModelSettingFixture, "SETMOD without SETUP should be failure", "[SETMOD]") { 
+//TEST_CASE_METHOD(ModelSettingFixture, "Test setting of every possible SBL model for all fluids", "[SETMOD],[SBL]") { set_all("SBL"); }
+TEST_CASE_METHOD(ModelSettingFixture, "SETMOD without SETUP should be warning", "[SETMOD]") { 
     int ierr; std::string herr;
     std::tie(ierr, herr) = SETMOD(1, "ETA", "HMX", "VS1");
     CHECK(ierr != 0);
