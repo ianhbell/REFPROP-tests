@@ -47,7 +47,13 @@ public:
         CAPTURE(shared_library_path);
 
 #if defined(__MANYSOISWINDOWS__)
+
+#if defined(IS_32_BIT)
+        auto load_method = AbstractSharedLibraryWrapper::load_method::LOAD_LIBRARY;
+#else
         auto load_method = AbstractSharedLibraryWrapper::load_method::FROM_FILE;
+#endif
+        
 #else
         auto load_method = AbstractSharedLibraryWrapper::load_method::LOAD_LIBRARY;
 #endif
