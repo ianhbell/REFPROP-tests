@@ -503,6 +503,7 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check NBP for all pure fluids (when possibl
             std::vector<double> z = { 0.5,0.5 }; double a = 1, Q = 0.0;
             auto r = REFPROP(fld, "TRIP", "P", MOLAR_BASE_SI, iMass, iFlag, a, Q, z);
             double pt = r.Output[0];
+            CAPTURE(fld);
             CAPTURE(r.herr);
             CHECK(r.ierr < 100);
             if (pt > 101325) {
