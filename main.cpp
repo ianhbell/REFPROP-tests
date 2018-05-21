@@ -646,15 +646,9 @@ public:
         char hmodij[4] = "", hfmix[256] = "", hfij[256] = "", hbinp[256] = "", hmxrul[256] = "";
         std::vector<double> fij(6, 0.0);
         memset(hmodij, ' ',3); memset(hfmix, ' ', 255); memset(hfij, ' ', 255); memset(hbinp, ' ', 255); memset(hmxrul, ' ', 255);
-        std::cout << strlen(hmodij) << std::endl;
         int ii = icomp, jj = jcomp;
         GETKTVdll(ii, jj, hmodij, &(fij[0]), hfmix, hfij, hbinp, hmxrul, 3, 255, 255, 255, 255);
         KTVvalues o;
-        std::cout << "hmodij:" << hmodij << "|" << std::endl;
-        std::cout << "hfmix:" << hfmix << "|" << std::endl;
-        std::cout << "hfij:" << hfij << "|" << std::endl;
-        std::cout << "hbinp:" << hbinp << "|" << std::endl;
-        std::cout << "hmxrul:" << hmxrul << "|" << std::endl;
         
         o.hmodij = std::string(hmodij,3); o.fij=fij; o.hfmix = std::string(hfmix,254); o.hfij = std::string(hfij,254); o.hbinp = std::string(hbinp,254); o.hmxrul = std::string(hmxrul,254);
         boost::algorithm::trim(o.hmodij); //inplace
@@ -672,8 +666,11 @@ public:
         strcpy(hfij, in.hfij.c_str());
         strcpy(hbinp, in.hbinp.c_str());
         strcpy(hmxrul, in.hmxrul.c_str());
+        if (in.hmodij.length() == 2) {
+            hmodij[2] = ' ';
+        }
         double fij[6]; for (auto i = 0; i < in.fij.size(); ++i){ fij[i] = in.fij[i]; }
-        int ierr = 0; char herr[256] = ""; memset(hfij, ' ', 255);
+        int ierr = 0; char herr[256] = ""; memset(herr, ' ', 255);
         SETKTVdll(icomp, jcomp, hmodij, fij, hfmix, ierr, herr, 3, 255, 255);
         CAPTURE(herr);
         CHECK(ierr == 0);
@@ -709,17 +706,16 @@ public:
                 auto nv = get_values();
                 // Check PR is on, and parameters are modified
                 CHECK(nv.hmodij == std::string("PR"));
-                CHECK(nv.hbinp != pr_init.hbinp);
                 // Turn off PR
                 prflag = 0;
                 PREOSdll(prflag);
                 auto nv2 = get_values();
-                // Check PR is still on, but that parameters have been set back to initial parameters
-                CHECK(nv2.hmodij == std::string("PR"));
+                // Check that parameters have been set back to initial parameters
                 CHECK(are_same(get_values(), pr_init));
                 // Reset the parameters
                 reset();
-                CHECK(are_same(get_values(), init));
+                auto end = get_values();
+                CHECK(are_same(end, init));
                 break;
             }
             case perturbations::AGA:
@@ -784,16 +780,16 @@ public:
             int ierr = 0; std::string herr;
             SETFLUIDS(fluids, ierr, herr);
             CAPTURE(herr);
-            CHECK(ierr);
+            CHECK(ierr == 0);
             // Get the initial state
             auto ktv = get_values();
 
             // Run each step, checking the output each time
             std::vector<perturbations> steps = {
-                //perturbations::AGA, 
+                perturbations::AGA, 
                 perturbations::peng_robinson, 
-                //perturbations::peng_robinson,
-                //perturbations::set_back
+                perturbations::peng_robinson,
+                perturbations::set_back
             };
             for (auto &step : steps) {
                 do_action(step);
