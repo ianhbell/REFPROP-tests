@@ -1149,7 +1149,7 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check that R1234ze is an invalid fluid name
     int ierr = 0; std::string herr;
     SETFLUIDS("R1234ze", ierr, herr);
     CAPTURE(herr);
-    CHECK(ierr == 851);
+    CHECK(ierr == 901);
 };
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Check that all fluids load properly", "[setup]") {
