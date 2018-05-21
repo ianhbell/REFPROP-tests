@@ -434,12 +434,12 @@ std::vector<vel> transport_validation_data = {
     { "Oxygen", "T", 200, "Dmolar", 10000, "L", 34.6124e-3, 1e-4 },
     { "Oxygen", "T", 300, "Dmolar", 5000, "L", 32.5491e-3, 1e-4 },
     { "Oxygen", "T", 154.6, "Dmolar", 13600, "L", 377.476e-3, 1e-4 },
-    { "Air.ppf", "T", 100, "Dmolar", 1e-14, "L", 9.35902e-3, 1e-4 },
-    { "Air.ppf", "T", 300, "Dmolar", 1e-14, "L", 26.3529e-3, 1e-4 },
-    { "Air.ppf", "T", 100, "Dmolar", 28000, "L", 119.221e-3, 1e-4 },
-    { "Air.ppf", "T", 200, "Dmolar", 10000, "L", 35.3185e-3, 1e-4 },
-    { "Air.ppf", "T", 300, "Dmolar", 5000, "L", 32.6062e-3, 1e-4 },
-    { "Air.ppf", "T", 132.64, "Dmolar", 10400, "L", 75.6231e-3, 1e-4 },
+    { "AIR.PPF", "T", 100, "Dmolar", 1e-14, "L", 9.35902e-3, 1e-4 },
+    { "AIR.PPF", "T", 300, "Dmolar", 1e-14, "L", 26.3529e-3, 1e-4 },
+    { "AIR.PPF", "T", 100, "Dmolar", 28000, "L", 119.221e-3, 1e-4 },
+    { "AIR.PPF", "T", 200, "Dmolar", 10000, "L", 35.3185e-3, 1e-4 },
+    { "AIR.PPF", "T", 300, "Dmolar", 5000, "L", 32.6062e-3, 1e-4 },
+    { "AIR.PPF", "T", 132.64, "Dmolar", 10400, "L", 75.6231e-3, 1e-4 },
 
     // Huber, JPCRD, 2012
     { "Water", "T", 298.15, "Dmass", 1e-14, "L", 18.4341883e-3, 1e-6 },
@@ -561,6 +561,7 @@ public:
             char herr[255], hfld[10000] = "", hhmx[] = "HMX.BNC", href[] = "DEF";
             strcpy(hfld, el.fluid.c_str());
             SETUPdll(nc, hfld, hhmx, href, ierr, herr, 10000, 255, 3, 255);
+            CAPTURE(herr);
             CHECK(ierr == 0);
 
             double T_K, D_molm3;
