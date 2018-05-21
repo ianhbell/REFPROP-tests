@@ -932,6 +932,10 @@ public:
                     auto r = REFPROP(fluid,"","TC;DC",0,0,0,0,0,z);
                     double Tc = r.Output[0], Dc = r.Output[1];
                     auto r2 = REFPROP(fluid, "TD&", (key != "EOS") ? key : "D",0,0,0,1.1*Tc,1.1*Dc,z);
+                    if (r2.ierr == 540){
+
+                        continue; // Fluid doesn't have a transport property model, so that's not actually an error in this case
+                    }
                     CAPTURE(r2.herr);
                     CHECK(r2.ierr < 100);
                 }
