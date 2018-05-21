@@ -79,11 +79,11 @@ std::vector<vel> transport_validation_data = {
     {"DimethylEther", "T", 253.146, "Dmass", 734.28, "V", 0.20444e-3, 3e-3},
     {"DimethylEther", "T", 373.132, "Dmass", 613.78, "V", 0.09991e-3, 3e-3},
 
-    // From Fenghour, JPCRD, 1995
-    {"Ammonia", "T", 200, "Dmolar", 3.9, "V", 6.95e-6, 1e-3},
-    {"Ammonia", "T", 200, "Dmolar", 42754.4, "V", 507.28e-6, 1e-3},
-    {"Ammonia", "T", 398, "Dmolar", 7044.7, "V", 17.67e-6, 1e-3},
-    {"Ammonia", "T", 398, "Dmolar", 21066.7, "V", 43.95e-6, 1e-3},
+    // From Monogenidou, 2018
+    {"Ammonia", "T", 200, "Q", 1, "V", 6.95e-6, 1e-3},
+    {"Ammonia", "T", 200, "Q", 0, "V", 516.02e-6, 1e-3},
+    {"Ammonia", "T", 380, "Q", 1, "V", 14.03e-6, 1e-3},
+    {"Ammonia", "T", 380, "Q", 0, "V", 53.95e-6, 1e-3},
 
     // From Lemmon and Jacobsen, JPCRD, 2004
     {"Nitrogen", "T", 100, "Dmolar", 1e-14, "V", 6.90349e-6, 1e-3},
