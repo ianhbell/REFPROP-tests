@@ -142,6 +142,13 @@ public:
         SETMODdll(Ncomp, htype, hmix, hmodel, ierr, herr, 3, 3, 3, 255);
         return std::make_pair(ierr, std::string(herr));
     }
+
+    std::tuple<std::string, std::string> GETMOD(int Ncomp, const std::string &type) {
+        char htype[4] = "", hcode[4] = "   ", hcite[256] = ""; memset(hcite, ' ', 255);
+        strcpy(htype, type.c_str());
+        GETMODdll(Ncomp, htype, hcode, hcite, 3, 3, 255);
+        return std::make_tuple(std::string(hcode), std::string(hcite));
+    }
 };
 
 #endif
