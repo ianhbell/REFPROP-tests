@@ -711,7 +711,7 @@ public:
                 PREOSdll(prflag);
                 auto nv2 = get_values();
                 // Check that parameters have been set back to initial parameters
-                CHECK(are_same(get_values(), pr_init));
+                CHECK(are_same(nv2, init));
                 // Reset the parameters
                 reset();
                 auto end = get_values();
