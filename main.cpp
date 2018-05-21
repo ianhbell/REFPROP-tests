@@ -572,7 +572,7 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check absolute paths are ok", "[setup]") {
     CHECK(wmol < 27);
 };
 
-TEST_CASE_METHOD(REFPROPDLLFixture, "Check full absolute paths are ok", "[setup]") {
+TEST_CASE_METHOD(REFPROPDLLFixture, "Check full absolute paths are ok", "[setup],[FDIR]") {
     int MOLAR_BASE_SI = get_enum("MOLAR BASE SI");
 
     std::string hmx = std::string(std::getenv("RPPREFIX")) + "/FLUIDS/HMX.BNC";
@@ -591,12 +591,11 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check full absolute paths are ok", "[setup]
         CAPTURE(r.hUnits);
         CAPTURE(sep);
         CAPTURE(r.herr);
-        std::string str = std::string(r.herr);
+        std::string str = std::string(r.hUnits);
         boost::algorithm::trim(str);
         str = normalize_path(str);
         fld0 = normalize_path(fld0);
         CHECK(str == fld0);
-        CHECK(r.ierr == -999);
     }
     {
         std::string flds = std::string(std::getenv("RPPREFIX")) + "FLUIDS/R32.FLD" + "|" + std::string(std::getenv("RPPREFIX")) + "FLUIDS/PROPANE.FLD";
