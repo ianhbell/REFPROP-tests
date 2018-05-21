@@ -571,6 +571,7 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check Ttriple for all pure fluids (when pos
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Check absolute paths are ok", "[setup]") {
     std::string fld = std::string(std::getenv("RPPREFIX")) + "/FLUIDS/ACETYLENE.FLD";
+    fld = normalize_path(fld);
     
     int ierr = 0; std::string herr;
     SETFLUIDS(fld, ierr, herr);
@@ -586,13 +587,16 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check full absolute paths are ok", "[setup]
     int MOLAR_BASE_SI = get_enum("MOLAR BASE SI");
 
     std::string hmx = std::string(std::getenv("RPPREFIX")) + "/FLUIDS/HMX.BNC";
+    hmx = normalize_path(hmx);
     // hmx += std::string(255-hmx.size(), '\0');
     char * hhmx = const_cast<char *>(hmx.c_str());
 
     for (char sep : {'*', ';'})
     {
-        std::string fld0 = std::string(std::getenv("RPPREFIX")) + "FLUIDS/R32.FLD";
-        std::string fld1 = std::string(std::getenv("RPPREFIX")) + "FLUIDS/PROPANE.FLD";
+        std::string fld0 = std::string(std::getenv("RPPREFIX")) + "/FLUIDS/R32.FLD";
+        std::string fld1 = std::string(std::getenv("RPPREFIX")) + "/FLUIDS/PROPANE.FLD";
+        fld0 = normalize_path(fld0);
+        fld1 = normalize_path(fld1);
         std::string fld = fld0 + std::string(1, sep) + fld1;
         std::string flds = fld + std::string(10000 - fld.size()-2, '\0');
         int iMass = 0, iFlag = 0;
@@ -608,7 +612,7 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check full absolute paths are ok", "[setup]
         CHECK(str == fld0);
     }
     {
-        std::string flds = std::string(std::getenv("RPPREFIX")) + "FLUIDS/R32.FLD" + "|" + std::string(std::getenv("RPPREFIX")) + "FLUIDS/PROPANE.FLD";
+        std::string flds = normalize_path(std::string(std::getenv("RPPREFIX")) + "/FLUIDS/R32.FLD") + "|" + normalize_path(std::string(std::getenv("RPPREFIX")) + "/FLUIDS/PROPANE.FLD");
         flds += std::string(10000 - flds.size(), '\0');
         char * hfld = const_cast<char *>(flds.c_str());
         int ierr = 0, nc = 2; char hdef[4] = "DEF", herr[255];
