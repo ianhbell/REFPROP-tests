@@ -1162,6 +1162,26 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check that all fluids load properly", "[set
     }
 };
 
+TEST_CASE_METHOD(REFPROPDLLFixture, "Check that setting transport model for benzene doesn't change ammonia model", "[ETA],[NH3]") {
+    std::vector<double> z(20, 1.0);
+
+    auto r0 = REFPROP("AMMONIA", "TQ", "ETA", 0, 0, 0, 260, 0, z);
+    CHECK(r0.Output[0] == Approx(192.06).epsilon(1e-4));
+
+    auto m0 = GETMOD(1, "ETA");
+    SETMOD(1, "ETA", "HMX", "VS1");
+    auto r = REFPROP("BENZENE", "TP", "ETA", 0, 0, 0, 298, 101.325, z);
+    auto m1 = GETMOD(1, "ETA");
+
+    // Set to backup model(in the fluid file)
+    SETMOD(1, "ETA", "HMX", "VS5");
+    auto r2 = REFPROP("BENZENE", "TP", "ETA", 0, 0, 0, 298, 101.325, z);
+    auto m2 = GETMOD(1, "ETA");
+
+    auto r3 = REFPROP("AMMONIA", "TQ", "ETA", 0, 0, 0, 260, 0, z);
+    CHECK(r3.Output[0] == Approx(192.06).epsilon(1e-4));
+};
+
 TEST_CASE_METHOD(REFPROPDLLFixture, "Check that REDX works properly", "[REDX]") {
     double x[] = { 0.5,0.5 }, Tr = 1e20, Dr = 1e20;
     int ierr = 0; std::string herr;
