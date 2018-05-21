@@ -583,6 +583,27 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check absolute paths are ok", "[setup]") {
     CHECK(wmol < 27);
 };
 
+
+TEST_CASE_METHOD(REFPROPDLLFixture, "Check mass/molar caching correct", "[setup]") {
+
+    auto fname = "R433B.MIX";
+    std::vector<double> z(20, 1.0 / 20.0);
+    double iMass = 0;
+    auto r1 = REFPROP(fname, "", "TRED", 1, iMass, 0, 0.101325, 300, z);
+    iMass = 1;
+    auto r2 = REFPROP(fname, "", "M;TC;PC;DC", 0, iMass, 1, 0, 0, z);
+
+    // Water, to reset for sure
+    REFPROP("Water", "", "M;TC;PC;DC", 0, iMass, 1, 0, 0, z);
+
+    auto r3 = REFPROP(fname, "", "M;TC;PC;DC", 0, iMass, 1, 0, 0, z);
+    CHECK(r2.Output[0] == Approx(r3.Output[0]));
+    CHECK(r2.Output[1] == Approx(r3.Output[1]));
+    CHECK(r2.Output[2] == Approx(r3.Output[2]));
+
+};
+
+
 TEST_CASE_METHOD(REFPROPDLLFixture, "Check full absolute paths are ok", "[setup],[FDIR]") {
     int MOLAR_BASE_SI = get_enum("MOLAR BASE SI");
 
