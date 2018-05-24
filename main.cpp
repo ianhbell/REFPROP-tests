@@ -831,6 +831,14 @@ public:
 };
 TEST_CASE_METHOD(GETSETKTV, "Get and set B.I.P.", "[BIP]") { payload(); };
 
+TEST_CASE_METHOD(REFPROPDLLFixture, "Two-phase viscosity", "[transport]") {
+    std::vector<double> z(20, 1);
+    auto r = REFPROP("R32 * CO2", "PQ", "ETA", 0, 0, 0, 101.325, 0.5, z);
+    CAPTURE(r.herr);
+    CAPTURE(r.Output[0]);
+    CHECK(r.ierr != 0);
+};
+
 TEST_CASE_METHOD(REFPROPDLLFixture, "Critical TC1, VC1", "[crit]") {
     std::string fld = "Methane * Ethane";
     int ierr = 0; std::string herr;
