@@ -831,6 +831,26 @@ public:
 };
 TEST_CASE_METHOD(GETSETKTV, "Get and set B.I.P.", "[BIP]") { payload(); };
 
+TEST_CASE_METHOD(GETSETKTV, "Check BIP for R32 + CO2", "[BIP]") { 
+    int ierr =0 ; std::string herr = "";
+    SETFLUIDS("R32 * CO2",ierr,herr);
+    CAPTURE(herr);
+    CHECK(ierr == 0);
+    // Get them from GETKTV
+    auto vals = get_values();
+    // And also get them from the REFPROP function
+    std::vector<double> z(20, 1); 
+    auto R2 = REFPROP("R32 * CO2","","FIJMIX",0,0,0,1,2,z);
+    // The expected values
+    std::vector<double> betasFij = { 1.0, 0.9978225, 1.0, 1.0058521, 0.0};
+    for (auto i = 0U; i < 5U; ++i) {
+        CHECK(betasFij[i] == Approx(vals.fij[i]));
+    }
+    for (auto i = 0U; i < 5U; ++i) {
+        CHECK(betasFij[i] == Approx(R2.Output[i]));
+    }
+};
+
 TEST_CASE_METHOD(REFPROPDLLFixture, "Two-phase viscosity", "[transport]") {
     std::vector<double> z(20, 1);
     auto r = REFPROP("R32 * CO2", "PQ", "ETA", 0, 0, 0, 101.325, 0.5, z);
