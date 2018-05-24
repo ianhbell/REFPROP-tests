@@ -747,13 +747,15 @@ public:
             case perturbations::AGA:
             {
                 auto init = get_values();
-                int ierr; char herr[256] = "";
+                int ierr = 0; char herr[256] = "";
                 SETAGAdll(ierr, herr, 255);
                 auto flags = get_values();
                 // Check same as before
                 CHECK(are_same(init, flags));
                 // Turn off AGA
                 UNSETAGAdll();
+                // Check same as before
+                CHECK(are_same(init, get_values()));
                 break;
             }
             case perturbations::jiggle_then_reset:
