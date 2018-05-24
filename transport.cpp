@@ -465,9 +465,8 @@ std::vector<vel> transport_validation_data = {
     { "R23", "T", 420, "Dmolar", 7564, "L", 50.19e-3, 2e-4 },
     { "R23", "T", 370, "Dmolar", 32.62, "L", 17.455e-3, 1e-4 },
 
-    // From REFPROP 9.1 since no sample data provided in Tufeu
-    { "Ammonia", "T", 310, "Dmolar", 34320, "L", 0.45223303481784971, 1e-4 },
-    { "Ammonia", "T", 395, "Q", 0, "L", 0.2264480769301, 1e-4 },
+    // From Monogenidou, 2018
+    { "Ammonia", "T", 390, "Dmass", 415, "L", 264.13e-3, 1e-4 },
 
     // From Hands, Cryogenics, 1981
     { "Helium", "T", 800, "P", 1e5, "L", 0.3085, 1e-2 },
