@@ -909,11 +909,11 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Critical TC1, VC1", "[crit]") {
     SETFLUIDS(fld, ierr, herr);
     CAPTURE(herr);
 
-    double z[20] = { 0.5,0.5 };
+    std::vector<double> z(20,0.0); z[0] = 0.4; z[1] = 0.6;
     ierr = 0;
     char herr2[255] = "";
     double Tcrit, pcrit_kPa, dcrit_mol_L;
-    CRITPdll(z, Tcrit, pcrit_kPa, dcrit_mol_L, ierr, herr2, 255);
+    CRITPdll(&(z[0]), Tcrit, pcrit_kPa, dcrit_mol_L, ierr, herr2, 255);
     CAPTURE(herr2);
     CHECK(ierr <= 0); 
 };
