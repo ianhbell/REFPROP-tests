@@ -450,6 +450,50 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "EnablePR", "[setup]") {
     REQUIRE(mod == "PR ");
 };
 
+TEST_CASE_METHOD(REFPROPDLLFixture, "PRVLE calling FLAGS(\"PR\")", "[PR]") {
+    
+    std::vector<double> z(20, 0); z[0] = 0.4; z[1] = 0.6;
+
+    // Normal
+    auto r = REFPROP("METHANE * ETHANE", "PQ", "T;D", 0, 0, 0, 101.325, 0, z);
+    CHECK(r.ierr == 0);
+
+    // Turn on PR (no VT)
+    int prflag = 2, kflag = -1; FLAGS("PR", prflag, kflag);
+    auto r1 = REFPROP("METHANE * ETHANE", "PQ", "T;D", 0,0,0,101.325,0,z);
+    CHECK(r1.ierr == 0);
+
+    // Turn on PR (with VT)
+    prflag = 3; kflag = -1; FLAGS("PR",prflag, kflag);
+    auto r2 = REFPROP("METHANE * ETHANE", "PQ", "T;D", 0, 0, 0, 101.325, 0, z);
+    CHECK(r2.ierr == 0);
+
+    CHECK(r2.Output[0] == Approx(r1.Output[0])); // VT should not change pressure
+    CHECK(r2.Output[1] != Approx(r1.Output[1]).margin(0.1)); // VT should change density
+};
+
+TEST_CASE_METHOD(REFPROPDLLFixture, "PRVLE calling PREOS", "[PR]") {
+
+    std::vector<double> z(20, 0); z[0] = 0.4; z[1] = 0.6;
+
+    // Normal
+    auto r = REFPROP("METHANE * ETHANE", "PQ", "T;D", 0, 0, 0, 101.325, 0, z);
+    CHECK(r.ierr == 0);
+
+    // Turn on PR (no VT)
+    int prflag = 2; PREOSdll(prflag);
+    auto r1 = REFPROP("METHANE * ETHANE", "PQ", "T;D", 0, 0, 0, 101.325, 0, z);
+    CHECK(r1.ierr == 0);
+
+    // Turn on PR (with VT)
+    prflag = 3; PREOSdll(prflag);
+    auto r2 = REFPROP("METHANE * ETHANE", "PQ", "T;D", 0, 0, 0, 101.325, 0, z);
+    CHECK(r2.ierr == 0);
+
+    CHECK(r2.Output[0] == Approx(r1.Output[0])); // VT should not change pressure
+    CHECK(r2.Output[1] != Approx(r1.Output[1]).margin(0.1)); // VT should change density
+};
+
 TEST_CASE_METHOD(REFPROPDLLFixture, "Check ancillaries for pure fluids", "[flash],[ancillary]") {
     for (auto &fld : get_pure_fluids_list()) {
         {
