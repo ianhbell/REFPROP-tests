@@ -1120,11 +1120,11 @@ TEST_CASE_METHOD(ModelSettingFixture, "SETMOD without SETUP should be warning", 
 
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Torture test calling of DLL", "[Torture]") {
-    {
+    /*{
         char hflag[256] = "Debug", herr[256] = "";
         int jflag = 1, kflag = -1, ierr = 0;
         FLAGSdll(hflag, jflag, kflag, ierr, herr, 256, 256);
-    }
+    }*/
     for (auto &&pair : get_binary_pairs()) {
         for (std::string &&k : { "ETA", "TCX", "CP", "P", "STN", "TC", "PC" }) {
             for (bool forwards : {true, false}) {
