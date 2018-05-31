@@ -1,6 +1,8 @@
 ##
 ## Build me as: docker image build -t gcov . 
 ## Run me as: docker container run -it --mount type=bind,src="$(pwd)"/output,dst=/output gcov
+## 
+## Or just use docker-compose
 ##
 
 FROM ubuntu:17.10
