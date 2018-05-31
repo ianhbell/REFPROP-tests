@@ -981,6 +981,21 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check hUnits are the same several ways", "[
     //CHECK(r.hUnits == r4.hUnits);  // [TODO]: re-enable
 };
 
+TEST_CASE_METHOD(REFPROPDLLFixture, "check all enumerated values for units are correct", "[enum]") {
+    std::vector<std::string> keys = {"DEFAULT", "MOLAR SI", "MASS SI", "SI WITH C", "MOLAR BASE SI", "MASS BASE SI", "ENGLISH", "MOLAR ENGLISH", "MKS", "CGS", "MIXED", "MEUNITS", "USER"};
+    std::vector<int> vals = {0,1,2,3,100,101,5,6,7,8,9,10,11};
+    REQUIRE(keys.size() == vals.size());
+    for (auto i = 0; i < keys.size(); ++i) {
+        CAPTURE(get_enum(keys[i]) == vals[i])
+    }
+};
+TEST_CASE_METHOD(REFPROPDLLFixture, "Check that invalid unit systems causes reasonable error", "[enum]") {
+    std::vector<double> z = { 1.0 };
+    auto r = REFPROP("PROPANE", "PQ", "T", -1234, 0, 0, 101.325, 0, z);
+    CAPTURE(r.herr);
+    CHECK(r.ierr > 100);
+};
+
 TEST_CASE_METHOD(REFPROPDLLFixture, "CAS# for PROPANE", "[CAS]") { 
     std::vector<double> z = {1.0};
     auto r = REFPROP("PROPANE", " ", "CAS#", 0,0,0,0,0,z);
