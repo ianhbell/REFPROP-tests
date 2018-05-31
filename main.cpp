@@ -658,6 +658,34 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check Ttriple for all pure fluids (when pos
     }
 };
 
+TEST_CASE_METHOD(REFPROPDLLFixture, "Check acentric factor for all pure fluids (when possible)", "[flash],[acentric]") {
+    for (auto &fld : get_pure_fluids_list()) {
+        int ierr = 0; std::string herrs;
+        SETFLUIDS(fld, ierr, herrs);
+        CAPTURE(herrs);
+        CHECK(ierr == 0);
+
+        double wmm, ttrp, tnbpt, tc, pc, Dc, Zc, acf, dip, Rgas, z[] = { 1.0 };
+        int icomp = 1, kq = 1;
+        INFOdll(icomp, wmm, ttrp, tnbpt, tc, pc, Dc, Zc, acf, dip, Rgas);
+
+        double p = 101.325, D, Dl, Dv, xliq[20], xvap[20], q = 0, u, h, s, cv, cp, w;
+        ierr = 0; char herr[255] = "";
+
+        char htyp[4] = "EOS"; double Tmin, Tmax, Dmax, Pmax;
+        LIMITSdll(htyp, z, Tmin, Tmax, Dmax, Pmax, 3);
+        std::vector<double> zz(20,0); zz[0] = 1;
+        auto r = REFPROP("","TQ","P",0,0,0,0.7*tc,0,zz);
+
+        double ACF_EOS = -log10(r.Output[0]/pc)-1;
+        
+        CAPTURE(fld);
+        CAPTURE(r.herr);
+        CHECK(r.ierr < 2);
+        CHECK(ACF_EOS == Approx(acf).epsilon(0.01));
+    }
+};
+
 TEST_CASE_METHOD(REFPROPDLLFixture, "Check absolute paths are ok", "[setup]") {
     std::string fld = std::string(std::getenv("RPPREFIX")) + "/FLUIDS/ACETYLENE.FLD";
     fld = normalize_path(fld);
