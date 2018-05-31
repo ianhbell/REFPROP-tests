@@ -1070,6 +1070,9 @@ public:
                     double ptrip = r.Output[0];
                     auto r2 = REFPROP(fluid, "PMELT", "T", 0, 0, 0, 1.5*ptrip, 0, z);
                     CAPTURE(r2.herr);
+                    if (r2.ierr == 501) {
+                        continue; // Fluid doesn't have a melting line model, so that's not actually an error in this case
+                    }
                     CHECK(r2.ierr < 100);
                 }
             }
