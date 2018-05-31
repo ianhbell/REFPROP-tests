@@ -1235,7 +1235,9 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check all variables that do not require sta
             auto Nvars = variable_names.size();
             auto r = REFPROP(flds, " ", joined, 0, 0, 0, 0, 0, z);
             CAPTURE(r.herr);
-            CHECK(r.ierr < 100);
+            CAPTURE(r.ierr);
+            bool acceptable_ierr = (r.ierr < 0 ||  r.ierr == 318);
+            CHECK(acceptable_ierr);
             return std::vector<double>(r.Output.begin(), r.Output.begin() + Nvars);
         };
         auto forwards = get_Tred(true), back = get_Tred(false), diff = forwards;
