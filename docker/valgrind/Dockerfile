@@ -36,4 +36,5 @@ ADD run_valgrind.py /
 
 # Run each tag of tests, looking for memory issues
 WORKDIR /
-CMD python3 run_valgrind.py
+# -u for run unbuffered
+CMD python3 -u run_valgrind.py
