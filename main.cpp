@@ -933,16 +933,14 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Ancillary curves for D2O of Herrig", "[D2O]
 
     // IAPWS from Herrig (several creative ways of getting p_sub(T))
     std::vector<REFPROPResult> b(33);
-    b[3] = REFPROP("D2O", "TD&", "TSUBL", 0, 0, 0, 245, 0, z);
-    b[4] = REFPROP("D2O", "TD&", "SUBL-TP", 0, 0, 0, 245, 0, z);
-    b[5] = REFPROP("D2O", "TQ&", "SUBL-TP", 0, 0, 0, 245, -1, z);
-    b[6] = REFPROP("D2O", "TSUBL", "TSUBL;PSUBL", 0, 0, 0, 245, -1, z);
-    b[7] = REFPROP("D2O", "TSUBL", "P", 0, 0, 0, 245, -1, z);
+    b[0] = REFPROP("D2O", "TD&", "SUBL-TP", 0, 0, 0, 245, 0, z);
+    b[1] = REFPROP("D2O", "TQ&", "SUBL-TP", 0, 0, 0, 245, -1, z);
+    b[2] = REFPROP("D2O", "TSUBL", "P", 0, 0, 0, 245, -1, z);
     {
         int ierr2 = 0; char herr2[256] = ""; double zz[20] = { 1.0 }; double T2 = 245, p_kPa2 = -1; SUBLTdll(T2, zz, p_kPa2, ierr2, herr2, 255U);
-        b[8].Output = std::vector<double>(20,0); b[8].Output[0] = p_kPa2;
+        b[3].Output = std::vector<double>(20,0); b[3].Output[0] = p_kPa2;
     }
-    for (auto i = 3; i < 9; ++i){
+    for (auto i = 0; i < 4; ++i){
         CAPTURE(i);
         CHECK(b[i].Output[0] == Approx(0.327390934e-1));
     }
