@@ -236,6 +236,30 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check AGA8 stays on after SETFLUIDS", "[fla
 };
 
 
+TEST_CASE_METHOD(REFPROPDLLFixture, "Test surface tension H2O + X fails", "[surten]") {
+    for (auto &&other : get_pure_fluids_list()) {
+        if (other=="WATER"){ continue; }
+        std::vector<double> z(20,0); z[0] = 0.4; z[1] = 0.6;
+        int ierr = 0; std::string herr;
+        CAPTURE("Water * " + other);
+        SETFLUIDS("Water * " + other, ierr, herr);
+        CAPTURE(herr);
+        if (ierr == 117){ continue; } // Skip ones where setup was impossible
+        auto r = REFPROP("", "PQ", "STN", 0, 0, 0, 101.325, 1, z);
+        CAPTURE(r.herr);
+        if (other == "ACETONE" || other == "METHANOL" || other == "ETHANOL"){ continue; } // These have ST1
+        CHECK(r.ierr == 518);
+    }
+}
+
+TEST_CASE_METHOD(REFPROPDLLFixture, "Test surface tension for ST1 models", "[surten]") {
+    for (auto &&flds : {"Acetone * Water","Methanol * Benzene","Methanol * Water", "Ethanol * Water", "Methane * Nitrogen","Nitrogen * Argon","Nitrogen*Oxygen","Pentane*Hexadecane"}) {
+        std::vector<double> z(20, 0); z[0] = 0.4; z[1] = 0.6; 
+        auto r = REFPROP(flds, "PQ", "STN", 0, 0, 0, 101.325, 1, z);
+        CAPTURE(r.herr);
+        CHECK(r.ierr < 100);
+    }
+}
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "Test all PX0 for pures", "[setup],[PX0]") {
     auto flds_with_PH0 = fluids_with_PH0_or_PX0();
