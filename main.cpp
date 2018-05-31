@@ -51,6 +51,24 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Try to load all predefined mixtures", "[set
     }
 };
 
+TEST_CASE_METHOD(REFPROPDLLFixture, "CRITP w/o splines for all predefined mixtures", "[setup],[predef_mixes],[crit]") {
+    for (auto &&mix : get_predefined_mixtures_list()) {
+        // Load it
+        std::vector<double> z(20, 0.0);
+        auto r = REFPROP(mix + ".MIX", " ", "TRED", 1, 0, 0, 0.101325, 300, z);
+        CAPTURE(mix + ".MIX");
+        CAPTURE(r.herr);
+        CHECK(r.ierr < 100);
+        
+        // Get critical point
+        int ierr = 0; char herr[255] = ""; 
+        double Tc = -1, Pc = -1, Dc = -1;
+        CRITPdll(&(z[0]), Tc, Pc, Dc, ierr, herr, 255U);
+        CAPTURE(herr);
+        CHECK(ierr < 0);
+    }
+};
+
 struct PRTvalue{
     std::string name;
     double P, e, h, s, Cv, Cp, w, hjt;
@@ -258,7 +276,9 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Test all PX0 for pures", "[setup],[PX0]") {
         r = REFPROP(fluid, "TD&", "PHIG00;PHIG10;PHIG11;PHIG01;PHIG20", 1, 0, 0, T, rho, z);
         CHECK(r.ierr == 0);
         std::vector<double> with_PX0 = std::vector<double>(r.Output.begin(), r.Output.begin()+5);
-
+        
+        CAPTURE(T);
+        CAPTURE(rho);
         CHECK(normal.size() == with_PX0.size());
         CHECK(default_.size() == with_PX0.size());
         for (auto i = 0; i < normal.size(); ++i) {
@@ -933,16 +953,14 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Ancillary curves for D2O of Herrig", "[D2O]
 
     // IAPWS from Herrig (several creative ways of getting p_sub(T))
     std::vector<REFPROPResult> b(33);
-    b[3] = REFPROP("D2O", "TD&", "TSUBL", 0, 0, 0, 245, 0, z);
-    b[4] = REFPROP("D2O", "TD&", "SUBL-TP", 0, 0, 0, 245, 0, z);
-    b[5] = REFPROP("D2O", "TQ&", "SUBL-TP", 0, 0, 0, 245, -1, z);
-    b[6] = REFPROP("D2O", "TSUBL", "TSUBL;PSUBL", 0, 0, 0, 245, -1, z);
-    b[7] = REFPROP("D2O", "TSUBL", "P", 0, 0, 0, 245, -1, z);
+    b[0] = REFPROP("D2O", "TD&", "SUBL-TP", 0, 0, 0, 245, 0, z);
+    b[1] = REFPROP("D2O", "TQ&", "SUBL-TP", 0, 0, 0, 245, -1, z);
+    b[2] = REFPROP("D2O", "TSUBL", "P", 0, 0, 0, 245, -1, z);
     {
         int ierr2 = 0; char herr2[256] = ""; double zz[20] = { 1.0 }; double T2 = 245, p_kPa2 = -1; SUBLTdll(T2, zz, p_kPa2, ierr2, herr2, 255U);
-        b[8].Output = std::vector<double>(20,0); b[8].Output[0] = p_kPa2;
+        b[3].Output = std::vector<double>(20,0); b[3].Output[0] = p_kPa2;
     }
-    for (auto i = 3; i < 9; ++i){
+    for (auto i = 0; i < 4; ++i){
         CAPTURE(i);
         CHECK(b[i].Output[0] == Approx(0.327390934e-1));
     }
@@ -963,6 +981,21 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check hUnits are the same several ways", "[
     CHECK(r.hUnits == r2.hUnits);
     CHECK(r.hUnits == r3.hUnits);
     //CHECK(r.hUnits == r4.hUnits);  // [TODO]: re-enable
+};
+
+TEST_CASE_METHOD(REFPROPDLLFixture, "check all enumerated values for units are correct", "[enum]") {
+    std::vector<std::string> keys = {"DEFAULT", "MOLAR SI", "MASS SI", "SI WITH C", "MOLAR BASE SI", "MASS BASE SI", "ENGLISH", "MOLAR ENGLISH", "MKS", "CGS", "MIXED", "MEUNITS", "USER"};
+    std::vector<int> vals = {0,1,2,3,100,101,5,6,7,8,9,10,11};
+    REQUIRE(keys.size() == vals.size());
+    for (auto i = 0; i < keys.size(); ++i) {
+        CAPTURE(get_enum(keys[i]) == vals[i])
+    }
+};
+TEST_CASE_METHOD(REFPROPDLLFixture, "Check that invalid unit systems causes reasonable error", "[enum]") {
+    std::vector<double> z = { 1.0 };
+    auto r = REFPROP("PROPANE", "PQ", "T", -1234, 0, 0, 101.325, 0, z);
+    CAPTURE(r.herr);
+    CHECK(r.ierr > 100);
 };
 
 TEST_CASE_METHOD(REFPROPDLLFixture, "CAS# for PROPANE", "[CAS]") { 
@@ -1039,6 +1072,9 @@ public:
                     double ptrip = r.Output[0];
                     auto r2 = REFPROP(fluid, "PMELT", "T", 0, 0, 0, 1.5*ptrip, 0, z);
                     CAPTURE(r2.herr);
+                    if (r2.ierr == 501) {
+                        continue; // Fluid doesn't have a melting line model, so that's not actually an error in this case
+                    }
                     CHECK(r2.ierr < 100);
                 }
             }
@@ -1199,7 +1235,9 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Check all variables that do not require sta
             auto Nvars = variable_names.size();
             auto r = REFPROP(flds, " ", joined, 0, 0, 0, 0, 0, z);
             CAPTURE(r.herr);
-            CHECK(r.ierr < 100);
+            CAPTURE(r.ierr);
+            bool acceptable_ierr = (r.ierr < 0 ||  r.ierr == 318);
+            CHECK(acceptable_ierr);
             return std::vector<double>(r.Output.begin(), r.Output.begin() + Nvars);
         };
         auto forwards = get_Tred(true), back = get_Tred(false), diff = forwards;
