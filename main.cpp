@@ -111,6 +111,7 @@ public:
             double P, e, h, s, Cv, Cp, w, hjt;
             double T = 300, D = 0.3, z[20] = {1.0};
             THERMdll(T, D, z, P, e, h, s, Cv, Cp, w, hjt);
+            CAPTURE(val.name);
             CHECK(P == Approx(val.P).epsilon(1e-2));
             CHECK(e == Approx(val.e).epsilon(1e-2));
             CHECK(h == Approx(val.h).epsilon(1e-2));
