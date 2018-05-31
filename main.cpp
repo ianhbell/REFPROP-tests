@@ -51,6 +51,24 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Try to load all predefined mixtures", "[set
     }
 };
 
+TEST_CASE_METHOD(REFPROPDLLFixture, "CRITP w/o splines for all predefined mixtures", "[setup],[predef_mixes],[crit]") {
+    for (auto &&mix : get_predefined_mixtures_list()) {
+        // Load it
+        std::vector<double> z(20, 0.0);
+        auto r = REFPROP(mix + ".MIX", " ", "TRED", 1, 0, 0, 0.101325, 300, z);
+        CAPTURE(mix + ".MIX");
+        CAPTURE(r.herr);
+        CHECK(r.ierr < 100);
+        
+        // Get critical point
+        int ierr = 0; char herr[255] = ""; 
+        double Tc = -1, Pc = -1, Dc = -1;
+        CRITPdll(&(z[0]), Tc, Pc, Dc, ierr, herr, 255U);
+        CAPTURE(herr);
+        CHECK(ierr < 0);
+    }
+};
+
 struct PRTvalue{
     std::string name;
     double P, e, h, s, Cv, Cp, w, hjt;
