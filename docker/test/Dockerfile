@@ -1,8 +1,5 @@
-##
-## Build me as: docker image build -t gcov . 
-## Run me as: docker container run -it --mount type=bind,src="$(pwd)"/output,dst=/output gcov
 ## 
-## Or just use docker-compose
+## Just use docker-compose to spin up this job
 ##
 
 FROM ubuntu:17.10
@@ -36,6 +33,6 @@ RUN mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release && cmake --bu
 # Set the environment variable
 ENV RPPREFIX /REFPROP-cmake/build
  
-# Run the exe, generating gcov output, running from the REFPROP-cmake build
+# Run the exe, generating gcov output, running from the REFPROP-tests build
 WORKDIR /REFPROP-tests/build
-CMD ./main
+CMD ./main ~[Torture]
