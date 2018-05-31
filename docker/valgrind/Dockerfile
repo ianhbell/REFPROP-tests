@@ -16,11 +16,13 @@ RUN git clone --recursive https://github.com/usnistgov/REFPROP-cmake && \
     git clone --recursive https://github.com/ianhbell/REFPROP-tests 
 
 ADD REFPROP.zip . 
-RUN unzip REFPROP.zip && ls -l REFPROP
+RUN unzip REFPROP.zip -d REFPROP && ls -l REFPROP
 
 # Build the special shared library & copy fluid files
 WORKDIR /REFPROP-cmake
-RUN mkdir build && cd build && cmake .. -DREFPROP_FORTRAN_PATH=/REFPROP/FORTRAN -DCMAKE_BUILD_TYPE=RelWithDebInfo && cmake --build .
+RUN mkdir build && \ 
+    cd build && cmake .. -DREFPROP_FORTRAN_PATH=/REFPROP/FORTRAN -DCMAKE_BUILD_TYPE=RelWithDebInfo -DREFPROP_NO_NUMPY=ON && \
+    cmake --build .
 WORKDIR /REFPROP-cmake/build
 RUN cp -rfv /REFPROP/FLUIDS/ . && cp -rfv /REFPROP/MIXTURES/ . && echo `pwd` && echo `ls -l`
 

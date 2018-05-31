@@ -23,7 +23,9 @@ RUN unzip REFPROP.zip -d REFPROP
 
 # Build the special shared library & copy fluid files
 WORKDIR /REFPROP-cmake
-RUN mkdir build && cd build && cmake .. -DREFPROP_FORTRAN_PATH=/REFPROP/FORTRAN -DCMAKE_BUILD_TYPE=Debug -DREFPROP_GCOV=ON && cmake --build .
+RUN mkdir build && cd build && \
+    cmake .. -DREFPROP_FORTRAN_PATH=/REFPROP/FORTRAN -DCMAKE_BUILD_TYPE=Debug -DREFPROP_GCOV=ON -DREFPROP_NO_NUMPY=ON && \
+    cmake --build .
 WORKDIR /REFPROP-cmake/build
 RUN cp -rfv /REFPROP/FLUIDS/ . && cp -rfv /REFPROP/MIXTURES/ . && echo `pwd` && echo `ls -l`
 
