@@ -121,14 +121,11 @@ static std::string path_join_and_norm(const std::string &left, const std::string
 }
 
 static std::vector<std::string> get_files_in_folder(const std::string &folder, const std::string &extension) {
-    char* RPPREFIX = std::getenv("RPPREFIX");
-    REQUIRE(strlen(RPPREFIX) != 0);
+    
     namespace fs = boost::filesystem;
     std::vector<std::string> files;
 
-    // See https://stackoverflow.com/a/8725664/1360263
-    fs::path targetDir(fs::path(RPPREFIX) / fs::path(folder));
-    fs::directory_iterator it(targetDir), eod;
+    fs::directory_iterator it(folder), eod;
     BOOST_FOREACH(fs::path const &p, std::make_pair(it, eod))
     {
         if (fs::is_regular_file(p) && p.extension() == fs::path(extension))
@@ -140,12 +137,21 @@ static std::vector<std::string> get_files_in_folder(const std::string &folder, c
     return files;
 }
 
+static std::vector<std::string> get_files_in_RPPREFIX_folder(const std::string &folder, const std::string &extension) {
+    char* RPPREFIX = std::getenv("RPPREFIX");
+    REQUIRE(strlen(RPPREFIX) != 0);
+    namespace fs = boost::filesystem;
+
+    fs::path targetDir(fs::path(RPPREFIX) / fs::path(folder));
+    return get_files_in_folder(targetDir.string(), extension);
+}
+
 static std::vector<std::string> get_pure_fluids_list() {
-    return get_files_in_folder("FLUIDS", ".FLD");
+    return get_files_in_RPPREFIX_folder("FLUIDS", ".FLD");
 }
 
 static std::vector<std::string> get_predefined_mixtures_list() {
-    return get_files_in_folder("MIXTURES", ".MIX");
+    return get_files_in_RPPREFIX_folder("MIXTURES", ".MIX");
 }
 
 static std::vector<std::string> fluids_with_PH0_or_PX0() {

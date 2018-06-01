@@ -437,21 +437,28 @@ TEST_CASE_METHOD(REFPROPDLLFixture, "Qmass for single-phase point", "[flash],[pr
     REQUIRE(Qmass == Approx(998).margin(1));
 };
 
-TEST_CASE_METHOD(REFPROPDLLFixture, "Check fluid files with dash in them", "[file_loading],[setup]") {
+TEST_CASE_METHOD(REFPROPDLLFixture, "Check fluid files with dash in them", "[file_loading],[setup],[resources]") {
+    char * RESOURCES = std::getenv("RESOURCES");
+    REQUIRE(RESOURCES != nullptr);
+    auto resources = normalize_path(std::string(RESOURCES));
+        
     int ierr = 1, nc = 1;
     char herr[255], hfld[] = "-10.0.FLD", hhmx[] = "HMX.BNC", href[] = "DEF";
-    char nopath[255] = "";
-    SETPATHdll(nopath, 255);
+    char path[256] = ""; memset(path, 255, ' '); strcpy(path, resources.c_str());
+    SETPATHdll(path, 255);
     SETUPdll(nc, hfld, hhmx, href, ierr, herr, 10000, 255, 3, 255);
     CAPTURE(herr);
     REQUIRE(ierr == 0);
 };
 
-TEST_CASE_METHOD(REFPROPDLLFixture, "Check fluid files with unicode in them", "[file_loading],[setup]") {
+TEST_CASE_METHOD(REFPROPDLLFixture, "Check fluid files with unicode in them", "[file_loading],[setup],[resources]") {
+    char * RESOURCES = std::getenv("RESOURCES");
+    REQUIRE(RESOURCES != nullptr);
+    auto resources = normalize_path(std::string(RESOURCES));
     int ierr = 1, nc = 1;
     char herr[255], hfld[] = "été.FLD", hhmx[] = "HMX.BNC", href[] = "DEF";
-    char nopath[255] = "";
-    SETPATHdll(nopath, 255);
+    char path[256] = ""; memset(path, 255, ' '); strcpy(path, resources.c_str());
+    SETPATHdll(path, 255);
     SETUPdll(nc, hfld, hhmx, href, ierr, herr, 10000, 255, 3, 255);
     CAPTURE(herr);
     REQUIRE(ierr == 0);
@@ -1113,7 +1120,6 @@ public:
                     double Tc = r.Output[0], Dc = r.Output[1];
                     auto r2 = REFPROP(fluid, "TD&", (key != "EOS") ? key : "D",0,0,0,1.1*Tc,1.1*Dc,z);
                     if (r2.ierr == 540){
-
                         continue; // Fluid doesn't have a transport property model, so that's not actually an error in this case
                     }
                     CAPTURE(r2.herr);

@@ -1,0 +1,253 @@
+isooctane                            !short name
+540-84-1                             !CAS number
+2,2,4-trimethylpentane               !full name
+(CH3)2CHCH2C(CH3)3                   !chemical formula {C8H18}
+isobutyltrimethylmethane             !synonym
+114.22852          !molecular weight [g/mol]
+165.77             !triple point temperature [K]
+372.358            !normal boiling point [K]
+544.0              !critical temperature [K]
+2572.0             !critical pressure [kPa]
+2.12               !critical density [mol/L]
+0.303              !acentric factor
+0.0                !dipole moment [Debye]
+NBP                !default reference state
+8.0                !version number
+1262               !UN Number
+br-alkane          !family
+
+
+! compiled at NIST Physical and Chemical Properties Division, Boulder, Colorado
+! 02-01-09 AKL, original version
+! 08-02-10 TMB, add preliminary eos
+! 08-02-10 TMB, added ancillary equations
+! 01-13-11 EWL, add final eos
+! 03-08-11 MLH, revised preliminary transport
+! 04-06-13 EWL, add dipole moment
+! 04-17-14 EWL, add surface tension coefficients of Mulero et al. (2014)
+! 05-17-16 MLH, revise ECS transport
+
+
+#EOS               !equation of state specification
+FEQ  Helmholtz equation of state for isooctane of Blackham and Lemmon (2011).
+?LITERATURE REFERENCE \
+?Blackham, T.M. and Lemmon, E.W.
+?to be published in Int. J. Thermophys., 2011.
+?\
+!end of info section
+165.77             !lower temperature limit [K]
+600.0              !upper temperature limit [K]
+1000000.0          !upper pressure limit [kPa]
+6.97               !maximum density [mol/L]
+CPP                                    !pointer to Cp0 model
+114.22852                              !molecular weight [g/mol]
+165.77                                 !triple point temperature [K]
+0.00001796                             !pressure at triple point [kPa]
+6.96                                   !density at triple point [mol/L]
+372.358                                !normal boiling point temperature [K]
+0.303                                  !acentric factor
+544.0         2572.0         2.12      !Tc [K], pc [kPa], rhoc [mol/L]
+544.0                        2.12      !reducing parameters [K, mol/L]
+8.314472                               !gas constant [J/mol-K]
+  10  4      4 12      0  0            !# terms, # coeff/term for:  "normal" terms, critical, spare
+  0.568901D-01   1.0     4.   0.       !a(i),t(i),d(i),l(i)
+  0.196155D+01   0.3     1.   0.
+ -0.281164D+01   0.75    1.   0.
+ -0.815112D+00   1.11    2.   0.
+  0.326583D+00   0.55    3.   0.
+ -0.160893D+01   2.2     1.   2.
+ -0.454734D+00   3.7     3.   2.
+  0.108306D+01   1.53    2.   1.
+ -0.722876D+00   2.1     2.   2.
+ -0.434052D-01   0.9     7.   1.
+  0.196648D+01   0.88    1.   2. 2.  -0.75  -0.59 1.44 0.66   0. 0. 0.
+ -0.465082D+00   1.1     1.   2. 2.  -1.13  -1.45 0.68 0.90   0. 0. 0.
+ -0.409398D+00   2.75    3.   2. 2.  -0.87  -0.50 0.51 0.54   0. 0. 0.
+  0.232131D-01   1.0     3.   2. 2.  -4.73 -10.52 0.80 0.18   0. 0. 0.
+
+
+#AUX               !auxiliary model specification
+CPP  ideal gas heat capacity function
+?LITERATURE REFERENCE \
+?Blackham, T.M. and Lemmon, E.W.
+?\
+!end of info section
+100.               !lower temperature limit [K]
+1000.              !upper temperature limit [K]
+0.0                !upper pressure limit [kPa]
+0.0                !maximum density [mol/L]
+1.0          8.314472                  !reducing parameters for T, Cp0
+  1  3    0  0    0  0  0              !Nterms:  polynomial, exponential, cosh, sinh
+ 10.76      0.0
+ 15.48    775.0
+ 34.42   1900.0
+ 21.42   5100.0
+
+
+@EOS
+PRT  translated Peng-Robinson equation
+?LITERATURE REFERENCES \
+?  volume translation of Peng Robinson EOS
+?  translation computed so that sat. liquid density at Tr=0.7 matches FEQ  Helmholtz equation
+?  of state for isooctane of Lemmon (2004).
+!end of info section
+165.3              !lower temperature limit [K]
+1000.              !upper temperature limit [K]
+100000.0           !upper pressure limit [kPa]
+6.96               !maximum density [mol/L]
+CPP                !pointer to Cp0 model
+114.2285           !molecular weight [g/mol]
+0.303              !acentric factor from preliminary FEQ EOS
+543.8              !critical temperature [K]
+2560               !critical pressure [kPa]  from preliminary FEQ EOS
+2.22               !critical density [mol/L] from preliminary FEQ EOS
+8.314472           !gas constant [J/mol-K]
+1                  !Number of parameters
+-0.0058658
+
+
+#TCX               !thermal conductivity model specification
+TC5  pure fluid thermal conductivity model of Chung et al. (1988).
+?LITERATURE REFERENCE \
+? T-H. Chung, Ajlan, M., Lee, L.L. and Starling, K.E.
+? "Generalized Multiparameter Correlation for Nonpolar and Polar Fluid Transport Properties"
+? Ind. Eng. Chem. Res. 1998, 27, 671-679.
+?\
+!end of info section
+165.77             !lower temperature limit [K]
+600.0              !upper temperature limit [K]
+1000000.0          !upper pressure limit [kPa]
+6.97               !maximum density [mol/L]
+0.63               !Lennard-Jones coefficient sigma [nm] =0.809vc*(1/3)A
+431.99d0           !Lennard-Jones coefficient epsilon/kappa [K] =Tc/1.2593
+0.3d0            0.000000D+00            0.0d0  !w, mur, kappa for Chung
+0                  !additional parameters for Chung
+TK3                !pointer to critical enhancement auxiliary function
+
+
+#AUX               !thermal conductivity critical enhancement model
+TK3  simplified thermal conductivity critical enhancement of Perkins, Sengers, Abdulagatov and Huber
+?LITERATURE REFERENCE \
+? ? Perkins, R.A., Sengers, J.V., Abdulagatov, I.M. and Huber, M.L.,
+? "Simplified model for the critical thermal-conductivity enhancment in molecular fluids"
+? Int. J. Thermophysics(2013)34:191-212.
+?\
+!end of info section
+165.77             !lower temperature limit [K]
+600.0              !upper temperature limit [K]
+100000.0           !upper pressure limit [kPa]
+10.                !maximum density [mol/L]
+9  0  0  0         !# terms:  CO2-terms, spare, spare, spare
+1.0     1.0     1.0      !reducing par for T, rho, tcx (mW/m-K)
+0.630d0            !gnu (universal exponent)
+1.239d0            !gamma (universal exponent)
+1.02d0             !R0 (universal amplitude)
+0.063d0            !z (universal exponent--not used for t.c., only viscosity)
+1.00d0             !c (constant in viscosity eqn = 1/[2 - (alpha + gamma)/(2*nu)], but often set to 1)
+0.256d-9           !xi0 (amplitude) [m]
+0.059              !gam0 (amplitude) [-]
+7.71d-10           !qd_inverse (modified effective cutoff parameter) [m]
+816.0d+00          !tref (reference temperature)=1.5*Tc [K]
+
+
+#ETA               !viscosity model specification
+VS5  pure fluid viscosity model of Chung et al.(1988).
+?LITERATURE REFERENCE \
+? T-H. Chung, Ajlan, M., Lee, L.L. and Starling, K.E.
+? "Generalized Multiparameter Correlation for Nonpolar and Polar Fluid Transport Properties"
+? Ind. Eng. Chem. Res. 1998, 27, 671-679.
+?
+!end of info section
+165.77             !lower temperature limit [K]
+600.0              !upper temperature limit [K]
+1000000.0          !upper pressure limit [kPa]
+6.97               !maximum density [mol/L]
+1                  !number of terms associated with dilute-gas function
+NUL                !pointer to reduced effective collision cross-section model;not used
+0.63               !Lennard-Jones coefficient sigma [nm] =0.809vc*(1/3)A
+431.99d0           !Lennard-Jones coefficient epsilon/kappa [K] =Tc/1.2593
+1.0d0   1.0d0      !reducing parameters for T, eta
+0.22826d0      0.5d0  !=0.021357*SQRT(MW)  [Chapman-Enskog term]
+0                  !number of terms for initial density dependence; not yet used.
+0.3d0            0.000000D+00            0.0d0  !w, mur, kappa for Chung
+0                  !additional parameters for Chung
+NUL                !pointer to critical enhancement auxiliary function (none used)
+
+
+#STN        !surface tension specification
+ST1  surface tension model of Mulero et al. (2014)
+?LITERATURE REFERENCE \
+?Mulero, A. and Cachadiña, I.
+? "Recommended Correlations for the Surface Tension of Several Fluids
+? Included in the REFPROP Program,"
+? J. Phys. Chem. Ref. Data, 43, 023104, 2014.
+? doi:10.1063/1.4878755
+?\
+!end of info section
+0.0                !lower temperature limit [K]
+1000.              !upper temperature limit [K]
+0.0                !(dummy) upper pressure limit
+0.0                !(dummy) maximum density
+1                           !number of terms in surface tension model
+543.87                      !critical temperature used in fit (dummy)
+ 0.04794     1.209          !sigma0 and n
+
+
+#PS         !vapor pressure equation
+PS5  vapor pressure equation of Blackham et al. (2011).
+?LITERATURE REFERENCE \
+?See EOS
+?\
+!end of info section
+0.0                !lower temperature limit [K]
+1000.              !upper temperature limit [K]
+0.0                !(dummy) upper pressure limit
+0.0                !(dummy) maximum density
+544.0   2572.0     !reducing parameters
+5 0 0 0 0 0        !number of terms in equation
+-7.7985   1.0      !coefficients and exponents
+ 8.1280   1.5
+-7.3106   1.6
+-3.9392   4.0
+-1.6732  16.0
+
+
+#DL         !saturated liquid density equation
+DL1  saturated liquid density equation of Blackham et al. (2011).
+?LITERATURE REFERENCE \
+?See EOS
+?\
+!end of info section
+0.0                !lower temperature limit [K]
+1000.              !upper temperature limit [K]
+0.0                !(dummy) upper pressure limit
+0.0                !(dummy) maximum density
+544.0   2.12       !reducing parameters
+3 0 0 0 0 0        !number of terms in equation
+ 1.1535   0.286    !coefficients and exponents
+ 1.3709   0.54
+ 0.38804  3.3
+
+
+#DV         !saturated vapor density equation
+DV3  saturated vapor density equation of Blackham et al. (2011).
+?LITERATURE REFERENCE \
+?See EOS
+?\
+!end of info section
+0.0                !lower temperature limit [K]
+1000.              !upper temperature limit [K]
+0.0                !(dummy) upper pressure limit
+0.0                !(dummy) maximum density
+544.0   2.12       !reducing parameters
+5 0 0 0 0 0        !number of terms in equation
+-2.5793   0.366    !coefficients and exponents
+-6.4934   1.11
+-18.631   3.0
+-54.123   6.4
+-123.58  14.0
+
+
+@END
+c        1         2         3         4         5         6         7         8
+c2345678901234567890123456789012345678901234567890123456789012345678901234567890

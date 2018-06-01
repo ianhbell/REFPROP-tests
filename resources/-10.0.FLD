@@ -1,0 +1,72 @@
+nonpolar           !short name
+00-00-0            !CAS number
+nonpolar equation  !full name
+CnH(2n+2)          !chemical formula
+CH                 !synonym
+10.                !molecular weight [g/mol]           x
+100.               !triple point temperature [K]
+100.               !normal boiling point [K]
+500.               !critical temperature [K]           x
+5000.              !critical pressure [kPa]            x
+5.                 !critical density [mol/L]           x
+.1                 !acentric factor                    x
+-1.                !dipole moment [Debye]
+NBP                !default reference state
+6.1                !version number
+
+! compiled by E.W. Lemmon, NIST Physical and Chemical Properties Division, Boulder, Colorado
+! 09-09-03 EWL, original version
+
+
+#EOS               !equation of state specification
+FEQ  short Helmholtz equation of state
+?LITERATURE REFERENCE \
+?\
+!end of info section
+100.               !lower temperature limit [K]
+1000.              !upper temperature limit [K]
+1000000.0          !upper pressure limit [kPa]
+40.                !maximum density [mol/L]
+CPP                                    !pointer to Cp0 model                 x
+10.                                    !molecular weight [g/mol]             x
+100.                                   !triple point temperature [K]
+1.                                     !pressure at triple point [kPa]
+40.                                    !density at triple point [mol/L]
+200.                                   !normal boiling point temperature [K]
+.1                                     !acentric factor                      x
+500.          5000.       5.           !Tc [K], pc [kPa], rhoc [mol/L]       x
+500.                      5.           !reducing parameters [K, mol/L]       x
+8.314472                               !gas constant [J/mol-K]
+  12  4      0  0      0  0            !# terms, # coeff/term for:  "normal" terms, critical, spare
+  0.96464         0.25    1.0   0      !a(i),t(i),d(i),l(i)
+ -2.7855          1.125   1.0   0
+  0.86712         1.5     1.0   0
+ -0.18860         1.375   2.0   0
+  0.11804         0.25    3.0   0
+  0.00025181      0.875   7.0   0
+  0.57196         0.625   2.0   1
+ -0.029287        1.75    5.0   1
+ -0.43351         3.625   1.0   2
+ -0.12540         3.625   4.0   2
+ -0.028207       14.5     3.0   3
+  0.014076       12.0     4.0   3
+
+
+#AUX               !auxiliary model specification
+CPP  ideal gas heat capacity function
+?LITERATURE REFERENCE \
+?\
+!end of info section
+200.               !lower temperature limit [K]
+1500.0             !upper temperature limit [K]
+0.0                !upper pressure limit [kPa]
+0.0                !maximum density [mol/L]
+1.0          8.314472                  !reducing parameters for T, Cp0
+  1  1    0  0    0  0  0              !Nterms:  polynomial, exponential, cosh, sinh
+ 0.0                     0.
+ 0.0                  1000.
+
+
+@END
+c        1         2         3         4         5         6         7         8
+c2345678901234567890123456789012345678901234567890123456789012345678901234567890

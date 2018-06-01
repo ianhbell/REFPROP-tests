@@ -9,6 +9,7 @@ Some of these tests are based on the tests implemented in the CoolProp program (
 #include "catch.hpp"
 
 #include "REFPROPtests/baseclasses.h"
+#include <boost/filesystem.hpp>
 
 static double fudge = 1000;
 
@@ -675,3 +676,26 @@ public:
     }
 };
 TEST_CASE_METHOD(TransportValidationFixture, "Check transport properties against validation data", "[transport]") { payload(); };
+
+TEST_CASE_METHOD(REFPROPDLLFixture, "Check very old fluid files with old transport models", "[transport],[oldfiles],[resources]") {
+    char * RESOURCES = std::getenv("RESOURCES");
+    REQUIRE(RESOURCES != nullptr);
+    auto resources = normalize_path(std::string(RESOURCES) + "/TRANSPORT");
+    char nopath[255] = ""; memset(nopath, 255, ' ');
+    strcpy(nopath, resources.c_str());
+    SETPATHdll(nopath, 255);
+
+    auto files = get_files_in_folder(resources, ".FLD");
+    for (auto &&file : files){
+        int ierr; std::string herr;
+        SETFLUIDS(file, ierr, herr);
+        CAPTURE(file);
+        CAPTURE(herr);
+        REQUIRE(ierr == 0);
+        std::vector<double> z(20,0); z[0] = 1;
+        auto r = REFPROP("","","TC;DC",0,0,0,0,0,z);
+        auto Tc = r.Output[0], Dc = r.Output[1];
+        auto r1 = REFPROP("", "TD&", "ETA;TCX", 0, 0, 0, Tc*1.1, Dc*1.1, z);
+        CHECK(r1.ierr < 100);
+    }
+};

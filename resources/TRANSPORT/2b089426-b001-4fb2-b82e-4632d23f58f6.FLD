@@ -1,0 +1,260 @@
+butane             !short name (same as file name)
+106-97-8           !CAS number
+butane
+R600               !synonym1
+R-600              !synonym2
+ 58.123            !molecular weight [g/mol]
+134.86             !triple pt temperature [K]
+272.613            !normal boiling pt [K]
+425.16             !critical temperature [K]
+3796.              !critical pressure [kPa]
+3.920              !critical density [mol/L]
+0.19954            !acentric factor
+0.00000            !dipole moment [debye]
+IIR                !default reference state
+6.001              !version number
+
+! compiled by M. McLinden, NIST Thermophysics Division, Boulder, Colorado
+! 02-01-96  MM, original version
+! 03-18-96  MM, add transport correlations compiled by S.A. Klein
+! 06-17-96  MM, add thermal conductivity coefficients fitted by S.A. Klein
+! 07-08-96  MM, replace temporary Cp0 with function of Younglove & Ely
+! 10-03-96  MM, add surface tension fit
+! 10-17-96  MM, add thermal conductivity model of Younglove & Ely
+! 10-18-96  MM, missing constant in dilute-gas viscosity model
+! 02-20-97  MM, add default reference state
+! 02-21-97  MM, put viscosity model into revised VS2 format
+! 02-26-97  MM, add version number and pointer to visc critical enhancement (both future use)
+! 03-06-97  MM, modify ECS-transport to new format
+! 03-25-97  MM, set Psi,Chi coeff in ECS-transport to 1,0 pending refit of data
+! 08-21-97  MM, purge exponentials from values read by GUI (e.g. model limits)
+! 10-24-97  MM, read in f_int term in Eucken correlation in ECS method for t.c.
+!               change reference fluid EOS for ECS-transport from BWR to FEQ
+! 03-24-98 EWL, set max density to triple-point density (until melting line implemented)
+
+
+#EOS               !equation of state specification
+BWR  MBWR equation of state; Younglove & Ely (1987).
+?LITERATURE REFERENCE \
+?Younglove, B.A. and Ely, J.F. Thermophysical properties of fluids. II.
+? Methane, ethane, propane, isobutane and normal butane.
+? J. Phys. Chem. Ref. Data  16:577-798 (1987). \
+?\
+?N.B.  all temperatures on IPTS-68\
+?
+!end of info section
+134.86             !lower temperature limit [K]
+500.0              !upper temperature limit [K]
+70000.0            !upper pressure limit [kPa]
+12.65              !maximum density [mol/L]
+CPP                                    !pointer to Cp0 model
+ 58.123d0                              !molecular weight [g/mol]
+134.86d0                               !triple point temperature [K]
+  6.736d-4                             !pressure at triple point [kPa]
+ 12.650d0                              !density at triple point [mol/L]
+272.613d0                              !normal boiling point temp [K]
+  0.19954d0                            !acentric factor
+425.16d0   3796.d0   3.920d0           !Tc [K], pc [kPa], rhoc [mol/L]
+425.16d0             3.920d0           !reducing parameters [K, mol/L]
+3.920d0                                !gamma
+0.0831434d0                            !gas constant [L-bar/mol-K]
+      32       1                       !Nterm, Ncoeff per term
+   0.153740104603d-01  -0.160980034611d+00  -0.979782459010d+01
+   0.499660674504d+03  -0.102115607687d+07   0.236032147756d-02
+  -0.137475757093d+01  -0.907038733865d+03   0.385421748213d+06
+  -0.349453710700d-04   0.157361122714d+00   0.102301474068d+03
+   0.182335737331d-01  -0.404114307787d+01   0.187979855783d+01
+   0.362088795040d+00  -0.738762248266d-02  -0.218618590563d+01
+   0.118802729027d+00   0.706854198713d+06  -0.219469885796d+09
+  -0.182454361268d+05   0.206790377277d+10   0.111757550145d+03
+   0.558779925986d+05  -0.159579054026d+02  -0.148034214622d+07
+  -0.245206328201d+00   0.218305259309d+03  -0.923990627338d-04
+  -0.205267776639d+01   0.387639044820d+02
+
+
+#AUX               !auxiliary model specification
+CPP  ideal gas heat capacity function of Younglove & Ely
+?LITERATURE REFERENCE \
+?Younglove, B.A. and Ely, J.F. Thermophysical properties of fluids. II.
+? Methane, ethane, propane, isobutane and normal butane.
+? J. Phys. Chem. Ref. Data  16:577-798 (1987). \
+? \
+!end of info section
+134.86             !lower temperature limit [K]
+500.0              !upper temperature limit [K]
+0.00               !upper pressure limit [kPa]
+0.00               !maximum density [mol/L]
+1.000    8.31434                      !reducing parameters for T, Cp0
+7   1                                 !Nterms:  polynonial, exponential
+  3.8802310194d+5      -3.00d0
+ -1.5444296890d+5      -2.00d0
+  2.8455082239d+3      -1.00d0
+ -1.3491511376d+1       0.00d0
+  6.6142595353d-2       1.00d0
+ -2.4307965028d-5       2.00d0
+  1.5044248429d-10      3.00d0
+ -8.3933423467d+0    3000.d0
+
+
+@TRN               !transport model specification
+ECS  Extended Corresponding States model for transport props (R134a ref. fluid).
+?LITERATURE REFERENCES \
+?Klein, S.A., McLinden, M.O. and Laesecke, A. (1997). An improved extended
+? corresponding states method for estimation of viscosity of pure
+? refrigerants and mixtures. Int. J. Refrigeration  20: 208-217.\
+?\
+?Huber, M.L., Friend, D.G. and Ely, J.F. Prediction of the thermal
+? conductivity of refrigerants and refrigerant mixtures.
+? Fluid Phase Equilibria  80: 249-261 (1992). \
+?\
+?the Lennard-Jones parameters are estimated
+?
+!end of info section
+134.86             !lower temperature limit [K]
+500.0              !upper temperature limit [K]
+70000.0            !upper pressure limit [kPa]
+12.65              !maximum density [mol/L]
+FEQ R134a.fld
+VS1                !model for reference fluid viscosity
+TC1                !model for reference fluid thermal conductivity
+1                  !Lennard-Jones flag (0 or 1) (0 => use estimates)
+0.503103           !Lennard-Jones coefficient Sigma [nm]
+440.00             !L-J coefficient epsilon/kB [K]
+1  0  0            !number of terms in f_int term in Eucken correlation, spare1, spare 2
+ 1.3200d-3   0.0   0.0   0.0  !coeff, power of T, spare 1, spare 2
+0  0  0            !number of terms in psi (visc shape factor):  poly,spare1,spare2
+0  0  0            !number of terms in chi (t.c. shape factor):  poly,spare1,spare2
+
+
+#ETA               !viscosity model specification
+VS2  pure fluid viscosity model of Younglove & Ely (1987)
+?LITERATURE REFERENCE \
+?Younglove, B.A. and Ely, J.F. Thermophysical properties of fluids. II.
+? Methane, ethane, propane, isobutane and normal butane.
+? J. Phys. Chem. Ref. Data  16:577-798 (1987). \
+? \
+?N.B.  all temperatures on IPTS-68\
+?
+!end of info section
+134.86             !lower temperature limit [K]
+500.0              !upper temperature limit [K]
+70000.0            !upper pressure limit [kPa]
+12.65              !maximum density [mol/L]
+CI2                !pointer to collision integral model
+0.503103           !Lennard-Jones coefficient sigma [nm]
+440.               !Lennard-Jones coefficient epsilon/kB [K]
+ 2.0352457000d-01  !const in Eq 19 = 5/16*(k*MW/1000/pi/Na)**0.5*1.0d12
+ 0.1630521851d+01  !coeff for initial density dependence of viscosity (eq 21); Fv(1)
+ 0.0               !Fv(2)
+ 1.40              !Fv(3)
+ 425.16            !Fv(4)
+-0.2724386845d+02  !coefficients for residual viscosity, eqs (22 - 25)
+ 0.8012766611d+03  !Ev(2)
+ 0.2503978646d+02  !Ev(3)
+-0.1309704275d+05  !Ev(4)
+-0.8313305258d-01  !Ev(5)
+ 0.6636975027d+02  !Ev(6)
+ 0.9849317662d+04  !Ev(7)
+NUL                !pointer to critical enhancement auxiliary function (none used)
+
+
+#TCX               !thermal conductivity model specification
+TC2  pure fluid thermal conductivity model of Younglove & Ely (1987)
+?LITERATURE REFERENCE \
+?Younglove, B.A. and Ely, J.F. Thermophysical properties of fluids. II.
+? Methane, ethane, propane, isobutane and normal butane.
+? J. Phys. Chem. Ref. Data  16:577-798 (1987). \
+? \
+?N.B.  all temperatures on IPTS-68\
+?
+!end of info section
+134.86             !lower temperature limit [K]
+500.0              !upper temperature limit [K]
+70000.0            !upper pressure limit [kPa]
+12.65              !maximum density [mol/L]
+CI2                !pointer to collision integral model
+0.503103d0         !Lennard-Jones coefficient sigma [nm]
+440.d0             !Lennard-Jones coefficient epsilon/kB [K]
+ 2.0352526600d-01  !const in Eq 19 = 5/16*(k*MW/1000/pi/Na)**0.5*1.0d12
+ 0.1530992335d+01  !dilute gas terms (Eq 27):  Gt(1)
+-0.2114511021d+00  !                           Gt(2)
+ 0.4024170074d-02  !residual terms (Eqs 26, 28-30): Et(1)
+ 0.1561435847d+01
+-0.6004381127d+03
+-0.7547260841d-03
+-0.2069676662d-01
+ 0.9382534978d+02
+-0.1711371457d+00
+ 0.3647724935d+02  !                                Et(8)
+TK2                !pointer to critical enhancement model (follows immediately)
+ 0.000769608d0     !critical enhancement terms (Eqs D1-D4):  X1
+13.2533d0
+ 0.485554d0
+ 1.01021d0         !                                         X4
+ 9.10218d-10       !Z
+ 1.38054d-23       !Boltzmann's constant, k
+ 0.1630521851d+01  !coeff for initial density dependence of viscosity (eq 21); Fv(1)
+ 0.0               !Fv(2)
+ 1.40              !Fv(3)
+ 425.16            !Fv(4)
+-0.2724386845d+02  !coefficients for residual viscosity, eqs (22 - 25)
+ 0.8012766611d+03  !Ev(2)  (the viscosity is also used in conductivity correlation)
+ 0.2503978646d+02  !Ev(3)
+-0.1309704275d+05  !Ev(4)
+-0.8313305258d-01  !Ev(5)
+ 0.6636975027d+02  !Ev(6)
+ 0.9849317662d+04  !Ev(7)
+
+
+#AUX               !collision integral specification
+CI2  collision integral model of Younglove & Ely (1987)
+?LITERATURE REFERENCE \
+?Younglove, B.A. and Ely, J.F. Thermophysical properties of fluids. II.
+? Methane, ethane, propane, isobutane and normal butane.
+? J. Phys. Chem. Ref. Data  16:577-798 (1987). \
+? \
+?N.B.  all temperatures on IPTS-68\
+?
+!end of info section
+134.86             !lower temperature limit [K]
+500.00             !upper temperature limit [K]
+0.00               !(dummy) upper pressure limit
+0.00               !(dummy) maximum density
+9                  !number of terms
+ -3.0328138281     !Omega (eq 20): coeffs of {(e/kT)**((4-n)/3)}
+ 16.918880086      !N.B.  there is misprint in Younglove & Ely, the exponent
+-37.189364917      !      is ((4-n)/3) not ((n+2)/3)
+ 41.288861858
+-24.61592114
+  8.948843096
+ -1.8739245042
+  0.209661014      !N.B.  wrong sign in Younglove & Ely, Table 2
+ -0.009657044
+
+
+#STN        !surface tension specification
+ST1  surface tension model
+?LITERATURE REFERENCE \
+?fit of the data of:\
+?Calado, J.C.G., McLure, I.A. and Soares, V.A.M. (1978). Surface tension for
+? octafluorocyclobutane, n-butane and their mixtures from 233 K to 254 K, and
+? vapour pressure, excess gibbs function and excess volume for the mixture at
+? 233 K. Fluid Phase Equilibria  2: 199-213.\
+?\
+? Coffin, C.C. and Maass, O. (1928). The preparation and physical properties of
+? alpha-, beta- and gamma-butylene and normal and isobutane. J. Am. Chem. Soc.
+? 50: 1427-1437.\
+?
+!end info
+134.86             !lower temperature limit [K]
+425.16             !upper temperature limit [K]
+0.00               !(dummy) upper pressure limit
+0.00               !(dummy) maximum density
+1                  !number of terms
+425.16d0               !critical temperature used in fit (dummy)
+0.05418d0  1.26d0      !sigma0 and n
+
+
+@END
+c        1         2         3         4         5         6         7         8
+c2345678901234567890123456789012345678901234567890123456789012345678901234567890
