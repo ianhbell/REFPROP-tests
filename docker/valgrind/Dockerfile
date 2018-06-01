@@ -30,8 +30,9 @@ RUN cp -rfv /REFPROP/FLUIDS/ . && cp -rfv /REFPROP/MIXTURES/ . && echo `pwd` && 
 WORKDIR /REFPROP-tests
 RUN mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo && cmake --build .
 
-# Set the environment variable
+# Set the environment variables
 ENV RPPREFIX /REFPROP-cmake/build
+ENV RESOURCES /REFPROP-tests/resources
 
 # Copy the build script
 ADD run_valgrind.py /

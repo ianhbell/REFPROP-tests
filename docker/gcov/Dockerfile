@@ -33,8 +33,9 @@ RUN cp -rfv /REFPROP/FLUIDS/ . && cp -rfv /REFPROP/MIXTURES/ . && echo `pwd` && 
 WORKDIR /REFPROP-tests
 RUN mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release && cmake --build .
 
-# Set the environment variable
+# Set the environment variables
 ENV RPPREFIX /REFPROP-cmake/build
+ENV RESOURCES /REFPROP-tests/resources
  
 # Run the exe, generating gcov output, running from the REFPROP-cmake build
 WORKDIR /REFPROP-cmake/build
