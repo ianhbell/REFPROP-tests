@@ -22,7 +22,7 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/externals/manyso/include")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/externals/manyso/externals/MemoryModule")
 
 # The main EXE
-add_executable(main main.cpp transport.cpp GERG2008.cpp XLS.cpp)
+add_executable(main main.cpp transport.cpp GERG2008.cpp XLS.cpp GPA2145.cpp)
 # The required dependencies
 target_link_libraries(main Boost::filesystem)
 
