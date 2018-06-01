@@ -8,6 +8,17 @@
 #include "REFPROPtests/utils.h"
 #include <numeric>
 
+TEST_CASE_METHOD(REFPROPDLLFixture, "R + 0 = Total?", "[flash],[rplus0]") {
+    std::vector<double> z(20, 0.0);
+    auto rR = REFPROP("Water","TP","PR;ER;HR;SR;CVR;CPR;AR;GR",0,0,0,298, 101.325, z );
+    auto r0 = REFPROP("Water", "TP", "P0;E0;H0;S0;CV0;CP0;A0;G0", 0, 0, 0, 298, 101.325, z);
+    auto rT = REFPROP("Water", "TP", "P;E;H;S;CV;CP;A;G", 0, 0, 0, 298, 101.325, z);
+    // Check they add up to the total
+    for (auto i = 0; i < 8; ++i) {
+        CHECK(rT.Output[i] == Approx(rR.Output[i] + r0.Output[i]));
+    }
+}
+
 TEST_CASE_METHOD(REFPROPDLLFixture, "Check NBP of water", "[nbp]"){
     int ierr = 1, nc = 1;
     char herr[255], hfld[255] = "WATER.FLD", hhmx[255] = "HMX.BNC", href[4] = "DEF";
