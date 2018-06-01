@@ -35,4 +35,4 @@ ENV RPPREFIX /REFPROP-cmake/build
  
 # Run the exe, generating gcov output, running from the REFPROP-tests build
 WORKDIR /REFPROP-tests/build
-CMD ./main ~[Torture]
+CMD ./main ~[Torture] 2>&1 | tee /output/log.txt
