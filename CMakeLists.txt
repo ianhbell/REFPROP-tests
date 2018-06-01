@@ -21,8 +21,11 @@ include_directories("${CMAKE_SOURCE_DIR}/include/")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/externals/manyso/include")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/externals/manyso/externals/MemoryModule")
 
+# Get everything in the src/ directory (always), but not recursive
+file(GLOB APP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+
 # The main EXE
-add_executable(main main.cpp transport.cpp GERG2008.cpp XLS.cpp GPA2145.cpp)
+add_executable(main ${APP_SOURCES})
 # The required dependencies
 target_link_libraries(main Boost::filesystem)
 
